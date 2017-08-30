@@ -66,8 +66,8 @@ public class GzAccountDaoImpl extends NamedParameterJdbcDaoSupport implements Gz
 		
 		try
 		{
-			getJdbcTemplate().update("INSERT INTO account (baseuserid,balance,creditAsPlayer,creditAsBanker,paymentDays) "
-					+ "VALUES( ?,0.0,0.0,0.0,5)"
+			getJdbcTemplate().update("INSERT INTO account (baseuserid,balance,credit,wincommission,betcommission) "
+					+ "VALUES( ?,0.0,0.0,0.0,0.0)"
 					, new PreparedStatementSetter() {
 						public void setValues(PreparedStatement psStoreAccount) throws SQLException {
 							psStoreAccount.setObject(1,baseUserId);

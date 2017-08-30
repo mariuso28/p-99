@@ -5,6 +5,9 @@ import java.util.Collection;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.gz.baseuser.GzBaseUser;
+import org.gz.home.persistence.GzPersistenceException;
+import org.gz.services.GzServices;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -14,11 +17,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import org.gz.baseuser.GzBaseUser;
-import org.gz.home.persistence.GzPersistenceException;
-import org.gz.services.GzServices;
-import org.gz.util.EmailValidator;
-
 @Service
 public class CustomUserDetailsService implements UserDetailsService{
 
@@ -27,36 +25,29 @@ public class CustomUserDetailsService implements UserDetailsService{
 	private GzServices gzServices;
 
 	@Override
-	public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-		log.info("loadUserByUsername email : " + email);
+	public UserDetails loadUserByUsername(String memberId) throws UsernameNotFoundException {
+		log.info("loadUserByUsername memberId : " + memberId);
 		
-		email = email.toLowerCase();
-		EmailValidator ev = new EmailValidator();
-		if (!ev.validate(email))
-		{
-			log.error("Email " + email + " Invalid");
-			throw new UsernameNotFoundException("Invalid email: " + email);
-		}
-		
+
 		GzBaseUser baseUser;
 		try {
-			baseUser = gzServices.getGzHome().getBaseUserByEmail(email);
+			baseUser = gzServices.getGzHome().getBaseUserByMemberId(memberId);
 		} catch (GzPersistenceException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			log.error("Error finding User: " + email + " not found");
-			throw new UsernameNotFoundException("Error finding User: " + email);
+			log.error("Error finding User: " + memberId + " not found");
+			throw new UsernameNotFoundException("Error finding User: " + memberId);
 		}
 		if (baseUser==null){
-			log.error("User : " + email + " not found");
-			throw new UsernameNotFoundException("User: " + email);
+			log.error("User : " + memberId + " not found");
+			throw new UsernameNotFoundException("User: " + memberId);
 		}
-		log.info("User : " + baseUser.getEmail() + " found with role :" + baseUser.getRole());
+		log.info("User : " + baseUser.getMemberId() + " found with role :" + baseUser.getRole());
 		
 		Collection<GrantedAuthority> authorities = getAuthorities(baseUser);
 		
 		boolean enabled = baseUser.isEnabled();
-		User user = new User(baseUser.getEmail(), baseUser.getPassword(), enabled, true, true, true, authorities);
+		User user = new User(baseUser.getMemberId(), baseUser.getPassword(), enabled, true, true, true, authorities);
 		
 		log.info("Using User : " + user.getUsername() + " with authorities :" + authorities);
 		return user;

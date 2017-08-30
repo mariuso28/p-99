@@ -11,22 +11,22 @@ import org.gz.admin.GzAdmin;
 import org.gz.agent.GzAgent;
 import org.gz.dustbin.GzDustbin;
 
-public enum GzRole implements Serializable{
-	
-		ROLE_PLAY("Player",0,'p',"py",GzBaseUser.class,"FFD6D6"),
-		ROLE_AGENT1("Agent-1",1,'a',"a1",GzAgent.class,"FFF7D6"),
-		ROLE_AGENT2("Agent-2",2,'b',"a2",GzAgent.class,"E9FFD6"),
-		ROLE_AGENT3("Agent-3",3,'c',"a3",GzAgent.class,"D6FFEE"),
-		ROLE_AGENT4("Agent-4",4,'d',"a4",GzAgent.class,"D6ECFF"),
-		ROLE_AGENT5("Agent-5",5,'e',"a5",GzAgent.class,"E3D6FF"),
-		ROLE_AGENT6("Agent-6",6,'f',"a6",GzAgent.class,"D6FFEE"),
-		ROLE_AGENT7("Agent-7",7,'g',"a7",GzAgent.class,"D6ECFF"),
-		ROLE_AGENT8("Agent-8",8,'h',"a8",GzAgent.class,"E3D6FF"),
-		ROLE_AGENT9("Agent-9",9,'i',"a9",GzAgent.class,"E3D6FF"),
-		ROLE_DUSTBINA("Dustbin-A",10,'A',"dbA",GzDustbin.class,"F7D6FF"),
-		ROLE_DUSTBINB("Dustbin-B",11,'B',"dbB",GzDustbin.class,"F7D6FF"),
-		ROLE_DUSTBINC("Dustbin-C",12,'C',"dbC",GzDustbin.class,"F7D6FF"),
-		ROLE_ADMIN("Admin",13,'x',"adm",GzAdmin.class,"F7D6FF");
+public enum GzRole  implements Serializable{
+		
+		ROLE_PLAY("Player",0,'p',"py",GzBaseUser.class,GzRoleType.PLAYER,"FFD6D6"),
+		ROLE_AGENT1("Agent-1",1,'a',"a1",GzAgent.class,GzRoleType.AGENT,"FFF7D6"),
+		ROLE_AGENT2("Agent-2",2,'b',"a2",GzAgent.class,GzRoleType.AGENT,"E9FFD6"),
+		ROLE_AGENT3("Agent-3",3,'c',"a3",GzAgent.class,GzRoleType.AGENT,"D6FFEE"),
+		ROLE_AGENT4("Agent-4",4,'d',"a4",GzAgent.class,GzRoleType.AGENT,"D6ECFF"),
+		ROLE_AGENT5("Agent-5",5,'e',"a5",GzAgent.class,GzRoleType.AGENT,"E3D6FF"),
+		ROLE_AGENT6("Agent-6",6,'f',"a6",GzAgent.class,GzRoleType.AGENT,"D6FFEE"),
+		ROLE_AGENT7("Agent-7",7,'g',"a7",GzAgent.class,GzRoleType.AGENT,"D6ECFF"),
+		ROLE_AGENT8("Agent-8",8,'h',"a8",GzAgent.class,GzRoleType.AGENT,"E3D6FF"),
+		ROLE_AGENT9("Agent-9",9,'i',"a9",GzAgent.class,GzRoleType.AGENT,"E3D6FF"),
+		ROLE_DUSTBINA("Dustbin-A",10,'A',"dbA",GzDustbin.class,GzRoleType.DUSTBIN,"F7D6FF"),
+		ROLE_DUSTBINB("Dustbin-B",11,'B',"dbB",GzDustbin.class,GzRoleType.DUSTBIN,"F7D6FF"),
+		ROLE_DUSTBINC("Dustbin-C",12,'C',"dbC",GzDustbin.class,GzRoleType.DUSTBIN,"F7D6FF"),
+		ROLE_ADMIN("Admin",13,'x',"adm",GzAdmin.class,GzRoleType.ADMIN,"F7D6FF");
 		
 		private static final Logger log = Logger.getLogger(GzRole.class);
 		private String desc;
@@ -36,10 +36,11 @@ public enum GzRole implements Serializable{
 		@SuppressWarnings("rawtypes")
 		private Class correspondingClass;
 		private String color;
+		private GzRoleType type;
 		private static HashMap<Character,GzRole> codeMap;
 		
 		@SuppressWarnings("rawtypes")
-		private GzRole(String desc,int rank,char code,String shortCode,Class correspondingClass,String color)
+		private GzRole(String desc,int rank,char code,String shortCode,Class correspondingClass,GzRoleType type,String color)
 		{
 			setRank(rank);
 			setDesc(desc);
@@ -47,6 +48,7 @@ public enum GzRole implements Serializable{
 			setColor(color);
 			setCorrespondingClass(correspondingClass);
 			setShortCode(shortCode);
+			setType(type);
 			GzRole.addCodeMap(this,code);
 		}
 		
@@ -127,6 +129,14 @@ public enum GzRole implements Serializable{
 		public String getShortCode() {
 			return shortCode;
 		}
+		
+		public GzRoleType getType() {
+			return type;
+		}
+
+		public void setType(GzRoleType type) {
+			this.type = type;
+		}
 
 		public void setCorrespondingClass(@SuppressWarnings("rawtypes") Class correspondingClass) {
 			this.correspondingClass = correspondingClass;
@@ -141,6 +151,7 @@ public enum GzRole implements Serializable{
 			return log;
 		}
 		
+		
 		public List<GzRole> getAllRoles()
 		{
 			List<GzRole> roles = new ArrayList<GzRole>();
@@ -149,6 +160,32 @@ public enum GzRole implements Serializable{
 			return roles;
 		}
 
-
+		public List<GzRole> getAvailableRoles()
+		{
+			List<GzRole> roles = new ArrayList<GzRole>();
+			if (this.equals(GzRole.ROLE_PLAY))
+				return roles;
+			
+			if (this.getType().equals(GzRoleType.ADMIN))
+			{
+				roles.add(GzRole.ROLE_DUSTBINA);
+				return roles;
+			}
+			if (this.getType().equals(GzRoleType.DUSTBIN))
+			{
+				for (int r = rank-1; r>=1; r--)
+				{
+					roles.add(getRoleForRank(r));
+				}
+			}
+			if (this.getType().equals(GzRoleType.AGENT))
+			{
+				for (int r = rank-1; r>=0; r--)
+				{
+					roles.add(getRoleForRank(r));
+				}
+			}
+			return roles;
+		}
 		
 }

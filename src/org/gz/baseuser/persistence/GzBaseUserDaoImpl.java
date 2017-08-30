@@ -77,16 +77,17 @@ public class GzBaseUserDaoImpl extends GzAccountDaoImpl implements GzBaseUserDao
 		
 		try
 		{
-			getJdbcTemplate().update("UPDATE baseuser SET contact=?,phone=?,nickname=?,icon =?,enabled=?,password=? WHERE id=?"
+			getJdbcTemplate().update("UPDATE baseuser SET email=?,contact=?,phone=?,nickname=?,icon =?,enabled=?,password=? WHERE id=?"
 			        , new PreparedStatementSetter() {
 						public void setValues(PreparedStatement ps) throws SQLException {
-						ps.setString(1, baseUser.getContact());
-						ps.setString(2, baseUser.getPhone());
-						ps.setString(3, baseUser.getNickname());
-						ps.setString(4, baseUser.getIcon());
-						ps.setBoolean(5, baseUser.isEnabled());
-						ps.setString(6, baseUser.getPassword());
-						ps.setObject(7, baseUser.getId());
+						ps.setString(1, baseUser.getEmail());
+						ps.setString(2, baseUser.getContact());
+						ps.setString(3, baseUser.getPhone());
+						ps.setString(4, baseUser.getNickname());
+						ps.setString(5, baseUser.getIcon());
+						ps.setBoolean(6, baseUser.isEnabled());
+						ps.setString(7, baseUser.getPassword());
+						ps.setObject(8, baseUser.getId());
 			      }
 			    });
 		}
@@ -207,9 +208,10 @@ public class GzBaseUserDaoImpl extends GzAccountDaoImpl implements GzBaseUserDao
 		{
 			final String sql = "SELECT rolecode FROM baseUser WHERE memberId=?";
 			String rolecode = getJdbcTemplate().queryForObject(sql,new Object[]{ memberId }, String.class );
+			@SuppressWarnings("rawtypes")
 			Class clazz = GzRole.getRoleClassForCode(rolecode);
 			final String sql1 = "SELECT * FROM baseUser WHERE memberId=?";
-			List<GzBaseUser> bus = getJdbcTemplate().query(sql,new PreparedStatementSetter() {
+			List<GzBaseUser> bus = getJdbcTemplate().query(sql1,new PreparedStatementSetter() {
 				        public void setValues(PreparedStatement preparedStatement) throws SQLException {
 				          preparedStatement.setString(1, memberId);
 				        }
@@ -370,7 +372,7 @@ public class GzBaseUserDaoImpl extends GzAccountDaoImpl implements GzBaseUserDao
 			else
 			if (clazz.equals(GzDustbin.class))
 			{
-				final String sql = "SELECT * FROM baseUser WHERE parentcode = ? AND rolecode >= 'A' AND rolecole <='Z' ORDER BY rolecode,memberid";
+				final String sql = "SELECT * FROM baseUser WHERE parentcode = ? AND rolecode >= 'A' AND rolecode <='Z' ORDER BY rolecode,memberid";
 				bus = getJdbcTemplate().query(sql,new PreparedStatementSetter() {
 					        public void setValues(PreparedStatement ps) throws SQLException {
 					        	ps.setString(1,parent.getCode());

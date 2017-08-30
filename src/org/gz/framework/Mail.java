@@ -224,7 +224,7 @@ public class Mail
 		String subject = "Please Verify Your Registration";
 		
 		// @RequestMapping(value = "/verify", params="code", method = RequestMethod.GET)
-		String link = "http://" + domainTarget+"/redpacket/rp/logon/verify?code&id=" + baseUser.getId().toString();
+		String link = "http://" + domainTarget+"/p-99/gz/verify?code&id=" + baseUser.getId().toString();
 		
 		String msg = "Hi " + baseUser.getContact() + "\nYour RedPacket Gaming Registration is set to your email : " + baseUser.getEmail() 
 				+ ".\nPlease click on the link below to activate your registration.\n\n"

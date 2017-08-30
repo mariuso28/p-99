@@ -22,11 +22,10 @@ public class GzProfile {
 		setPassword(password);
 	}
 	
-	public String validate(String vPassword,boolean exist,GzRole role)
+	public String validate(String vPassword,GzRole role)
 	{
 		String msg = "";
-		if (exist == false)
-			msg += checkEmail();
+		msg += checkEmail();
 		msg += checkField("Contact",contact);
 		if (role.equals(GzRole.ROLE_PLAY))
 			msg += checkField("Nick Name",nickname);

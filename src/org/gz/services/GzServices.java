@@ -296,19 +296,19 @@ public class GzServices
 			mail.notifyPasswordReset(baseUser,null,pw.toString());
 	}
 	
-	public String tryResetPassword(String email)
+	public String tryResetPassword(String memberId)
 	{
-		log.info("Received request to password ");
+		log.info("Received request to password for : " + memberId);
 		GzBaseUser baseUser;
 		try {
-			baseUser = getGzHome().getBaseUserByEmail(email);
+			baseUser = getGzHome().getBaseUserByEmail(memberId);
 		} catch (GzPersistenceException e) {
 			log.error(StackDump.toString(e));
 			return "Error on reset, please try later.";
 		}
 		if (baseUser==null)
 		{
-			return "User : " + email + " has not been registered - please consult your agent";
+			return "User : " + memberId + " has not been registered - please consult your agent";
 		}
 		
 		try {

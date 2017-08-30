@@ -3,6 +3,7 @@ package org.gz.admin.persistence;
 import org.apache.log4j.Logger;
 
 import org.gz.admin.GzAdmin;
+import org.gz.baseuser.GzBaseUser;
 import org.gz.baseuser.GzRole;
 import org.gz.baseuser.persistence.GzBaseUserDaoImpl;
 import org.gz.home.persistence.GzPersistenceException;
@@ -20,23 +21,21 @@ public class GzAdminDaoImpl extends GzBaseUserDaoImpl implements GzAdminDao
 	}
 		
 	@Override
-	public GzAdmin getAdminByEmail(String email) throws GzPersistenceException {
+	public GzAdmin getAdminByMemberId(String memberId) throws GzPersistenceException {
 		
-		String code = super.getCodeForEmail(email);
-		@SuppressWarnings("rawtypes")
-		Class clazz = GzRole.getRoleClassForCode(code);
-		GzAdmin agent = (GzAdmin) super.getBaseUserByEmail(email,clazz);
-		if (agent == null)
+		GzBaseUser bu = (GzBaseUser) super.getBaseUserByMemberId(memberId);
+		if (bu == null || !bu.getRole().equals(GzRole.ROLE_ADMIN))
 			return null;
 		
-		super.getDownstreamForParent(agent);
-		return agent;
+		GzAdmin admin = (GzAdmin) bu;
+		super.getDownstreamForParent(admin);
+		return admin;
 	}
 
 	@Override
 	public GzAdmin getAdminByCode(String code) throws GzPersistenceException {
 		
-		GzAdmin agent = (GzAdmin) getBaseUserByCode(code);
-		return agent;
+		GzAdmin admin = (GzAdmin) getBaseUserByCode(code);
+		return admin;
 	}
 }

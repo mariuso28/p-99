@@ -31,7 +31,7 @@ public interface GzHome
 	public void getMembersForBaseUser(GzBaseUser baseUser) throws GzPersistenceException;
 	public GzAgent getAgentByCode(String code) throws GzPersistenceException;
 	public GzAgent getAgentByEmail(String email) throws GzPersistenceException;
-	public GzAdmin getAdminByEmail(String email) throws GzPersistenceException;
+	public GzAdmin getAdminByMemberId(String memberId) throws GzPersistenceException;
 	public void storeTransaction(GzTransaction transaction) throws GzPersistenceException;
 	public void updateAccount(GzAccount account) throws GzPersistenceException;
 	public void storeAgent(GzAgent agent) throws GzPersistenceException;

@@ -4,6 +4,7 @@ import org.apache.log4j.Logger;
 import org.gz.baseuser.GzBaseUser;
 import org.gz.home.GzHome;
 import org.gz.home.persistence.GzPersistenceException;
+import org.gz.services.GzServices;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -17,11 +18,11 @@ public class TestSetBaseUserPassword
 	{
 		@SuppressWarnings("resource")
 		ApplicationContext context = new ClassPathXmlApplicationContext(
-				"rp-persistence.xml");
+				"gz-service.xml");
 
-	//	GzServices gzServices = (GzServices) context.getBean("gzServices");
+		GzServices gzServices = (GzServices) context.getBean("gzServices");
 		
-		GzHome home = (GzHome) context.getBean("gzHome"); // gzServices.getGzHome();
+		GzHome home = gzServices.getGzHome();
 		if (args.length > 0)
 		{
 			log.info(("Running with datasource: " + args[0]));
@@ -35,7 +36,7 @@ public class TestSetBaseUserPassword
 		home.setDefaultPasswordForAll(encoded);
 		
 		try {
-			GzBaseUser hb = home.getBaseUserByEmail("c1@rpco.com");
+			GzBaseUser hb = home.getBaseUserByMemberId("0001");
 			log.info("matches : " + encoder.matches("88888888", hb.getPassword()));
 		} catch (GzPersistenceException e) {
 			// TODO Auto-generated catch block

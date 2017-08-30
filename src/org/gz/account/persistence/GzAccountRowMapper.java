@@ -34,7 +34,6 @@ public class GzAccountRowMapper implements RowMapper<GzAccount>{
 		account.setCredit(rs.getDouble("credit"));
 		account.setBetCommission(rs.getDouble("betcommission"));
 		account.setWinCommission(rs.getDouble("wincommission"));
-		account.setPaymentDays(rs.getInt("paymentdays"));
 	}
 
 }

@@ -35,6 +35,8 @@ private static Logger log = Logger.getLogger(TestCreateModel.class);
 			home.storeBaseUser(admin);
 			GzBaseUser bu = home.getBaseUserByEmail("gzadmin@test.com");
 			log.info(bu.getEmail() + " : " + bu.getContact() + " : " + bu.getMemberId());
+			bu = home.getBaseUserByMemberId(bu.getMemberId());
+			log.info(bu.getEmail() + " : " + bu.getContact() + " : " + bu.getMemberId());
 			
 		} catch (GzPersistenceException e) {
 			// TODO Auto-generated catch block

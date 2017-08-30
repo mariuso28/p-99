@@ -11,9 +11,6 @@ import java.util.UUID;
 
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.log4j.Logger;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.web.multipart.MultipartFile;
-
 import org.gz.account.GzAccount;
 import org.gz.account.GzInvoice;
 import org.gz.account.GzPayment;
@@ -30,14 +27,22 @@ import org.gz.baseuser.GzBaseUser;
 import org.gz.baseuser.GzRole;
 import org.gz.baseuser.persistence.GzBaseUserDao;
 import org.gz.home.GzHome;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.web.multipart.MultipartFile;
 
 public class GzHomeDaoImpl implements GzHome {
 	protected static Logger log = Logger.getLogger(GzHomeDaoImpl.class);
 
+	@Autowired
 	private GzBaseUserDao gzBaseUserDao;
+	@Autowired
 	private GzAdminDao gzAdminDao;
+//	@Autowired
 	private GzAgentDao gzAgentDao;
+	@Autowired
 	private GzAccountDao gzAccountDao;
+	
 	private String closeInvoiceStartAt;
 	private String closeInvoiceAfterMins;
 	private int closeInvoiceAfter;
@@ -60,15 +65,6 @@ public class GzHomeDaoImpl implements GzHome {
         dataSource.setUrl(url);
 	}
 	
-	public GzAccountDao getGzAccountDao() {
-		return gzAccountDao;
-	}
-
-	public void setGzAccountDao(GzAccountDao gzAccountDao) {
-		this.gzAccountDao = gzAccountDao;
-	}
-
-	
 	@Override
 	public void getMembersForBaseUser(GzBaseUser baseUser) throws GzPersistenceException
 	{
@@ -88,24 +84,6 @@ public class GzHomeDaoImpl implements GzHome {
 	}
 
 	
-	public GzAgentDao getGzAgentDao() {
-		return gzAgentDao;
-	}
-
-	public void setGzAgentDao(GzAgentDao gzAgentDao) {
-		this.gzAgentDao = gzAgentDao;
-	}
-
-	
-
-	public GzBaseUserDao getGzBaseUserDao() {
-		return gzBaseUserDao;
-	}
-
-	public void setGzBaseUserDao(GzBaseUserDao gzBaseUserDao) {
-		this.gzBaseUserDao = gzBaseUserDao;
-	}
-
 	
 	@Override
 	public GzAgent getAgentByCode(String code) throws GzPersistenceException {
@@ -367,16 +345,8 @@ public class GzHomeDaoImpl implements GzHome {
     }
 
 	@Override
-	public GzAdmin getAdminByEmail(String email) throws GzPersistenceException {
-		return gzAdminDao.getAdminByEmail(email);
-	}
-
-	public GzAdminDao getGzAdminDao() {
-		return gzAdminDao;
-	}
-
-	public void setGzAdminDao(GzAdminDao gzAdminDao) {
-		this.gzAdminDao = gzAdminDao;
+	public GzAdmin getAdminByMemberId(String memberId) throws GzPersistenceException {
+		return gzAdminDao.getAdminByMemberId(memberId);
 	}
 
 	@Override

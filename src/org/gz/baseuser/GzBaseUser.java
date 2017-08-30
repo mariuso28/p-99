@@ -46,6 +46,7 @@ public class GzBaseUser
 	public void copyProfileValues(GzProfile profile)
 	{
 		PasswordEncoder encoder = new BCryptPasswordEncoder();
+		setEmail(profile.getEmail());
 		setPassword(encoder.encode(profile.getPassword()));
 		setContact(profile.getContact());
 		setNickname(profile.getNickname());

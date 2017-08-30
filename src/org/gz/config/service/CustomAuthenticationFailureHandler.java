@@ -10,8 +10,6 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
 
-import org.gz.util.EmailValidator;
-
 @Component
 public class CustomAuthenticationFailureHandler extends SimpleUrlAuthenticationFailureHandler{
 	
@@ -21,18 +19,15 @@ public class CustomAuthenticationFailureHandler extends SimpleUrlAuthenticationF
 	public void onAuthenticationFailure(javax.servlet.http.HttpServletRequest request, javax.servlet.http.HttpServletResponse response, 
 			AuthenticationException exception)
 	{
-		String email = request.getParameter("email");
-		EmailValidator ev = new EmailValidator();
-		if (ev.validate(email))
-			setDefaultFailureUrl("/rp/logon/signin?error&message=Authentication%20Error&email="+email);
-		else
-			setDefaultFailureUrl("/rp/logon/signin?error&message=Authentication%20Error&email=");
+		log.info("in onAuthenticationFailure");
+		String memberId = request.getParameter("memberId");
+		setDefaultFailureUrl("/gz/logon/signin?error&message=Authentication%20Error&memberId=" + memberId);
 		
 		log.info("Failure on : " + request.getParameter("email"));
 		setUseForward(false);
 		
 		try {
-			log.info("Forwarding to : " + "/rp/logon/signin?error&message=Authentication%20Error");
+			log.info("Forwarding to : " + "/gz/logon/signin?error&message=Authentication%20Error");
 			super.onAuthenticationFailure(request, response, exception);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
