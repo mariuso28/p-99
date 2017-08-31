@@ -10,6 +10,7 @@ public class GzMemberSummary {
 	private String memberId;
 	private String contact;
 	private String rank;
+	private String role;
 	private GzMemberSummary parent;
 	private List<GzMemberSummary> members = new ArrayList<GzMemberSummary>();
 	private boolean enabled;
@@ -24,7 +25,8 @@ public class GzMemberSummary {
 	{
 		setMemberId(bu.getContact());
 		setMemberId(bu.getMemberId());
-		setRank(bu.getRole().getShortCode());
+		setRank(Integer.toString(bu.getRole().getRank()));
+		setRole(bu.getRole().getShortCode());
 		if (bu.getParent()!=null)
 			setParent(new GzMemberSummary(bu.getParent()));
 		setEnabled(bu.isEnabled());
@@ -123,6 +125,14 @@ public class GzMemberSummary {
 
 	public void setCredit(double credit) {
 		this.credit = credit;
+	}
+
+	public String getRole() {
+		return role;
+	}
+
+	public void setRole(String role) {
+		this.role = role;
 	}
 
 	

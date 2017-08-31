@@ -21,6 +21,7 @@ import org.gz.admin.GzAdmin;
 import org.gz.agent.GzAgent;
 import org.gz.baseuser.GzBaseUser;
 import org.gz.baseuser.GzRole;
+import org.gz.baseuser.GzRoleType;
 import org.gz.dustbin.GzDustbin;
 import org.gz.home.persistence.GzPersistenceException;
 import org.gz.util.GetNextNumberNo4s;
@@ -41,8 +42,8 @@ public class GzBaseUserDaoImpl extends GzAccountDaoImpl implements GzBaseUserDao
 		
 		try
 		{
-			getJdbcTemplate().update("INSERT INTO baseuser (id,email,contact,phone,nickname,code,parentcode,role,icon,enabled,password,leafinstance,memberid,rolecode) "
-										+ "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+			getJdbcTemplate().update("INSERT INTO baseuser (id,email,contact,phone,nickname,code,parentcode,role,icon,enabled,password,leafinstance,memberid,roletype,rank) "
+										+ "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
 			        , new PreparedStatementSetter() {
 						public void setValues(PreparedStatement ps) throws SQLException {
 			    	  	ps.setObject(1, baseUser.getId());
@@ -58,7 +59,8 @@ public class GzBaseUserDaoImpl extends GzAccountDaoImpl implements GzBaseUserDao
 						ps.setString(11, baseUser.getPassword());
 						ps.setLong(12, baseUser.getLeafInstance());
 						ps.setString(13, baseUser.getMemberId());
-						ps.setString(14, Character.toString(baseUser.getRole().getCode()));
+						ps.setInt(14, baseUser.getRole().getType().getType());
+						ps.setInt(15, baseUser.getRole().getRank());
 			      }
 			    });
 			baseUser.setAuthorities(baseUser.getRole().getAllRoles());
@@ -206,10 +208,10 @@ public class GzBaseUserDaoImpl extends GzAccountDaoImpl implements GzBaseUserDao
 	{	
 		try
 		{
-			final String sql = "SELECT rolecode FROM baseUser WHERE memberId=?";
-			String rolecode = getJdbcTemplate().queryForObject(sql,new Object[]{ memberId }, String.class );
+			final String sql = "SELECT roletype FROM baseUser WHERE memberId=?";
+			int roletype = getJdbcTemplate().queryForObject(sql,new Object[]{ memberId }, Integer.class );
 			@SuppressWarnings("rawtypes")
-			Class clazz = GzRole.getRoleClassForCode(rolecode);
+			Class clazz = GzRoleType.getCorrespondingClassForType(roletype);
 			final String sql1 = "SELECT * FROM baseUser WHERE memberId=?";
 			List<GzBaseUser> bus = getJdbcTemplate().query(sql1,new PreparedStatementSetter() {
 				        public void setValues(PreparedStatement preparedStatement) throws SQLException {
@@ -235,7 +237,7 @@ public class GzBaseUserDaoImpl extends GzAccountDaoImpl implements GzBaseUserDao
 		{
 			GzRole role = GzRole.getRoleForCode(code);
 			@SuppressWarnings("rawtypes")
-			Class clazz = role.getCorrespondingClass();
+			Class clazz = role.getType().getCorrespondingClass();
 			
 			final String sql = "SELECT * FROM baseUser WHERE code=?";
 			List<GzBaseUser> bus = getJdbcTemplate().query(sql,new PreparedStatementSetter() {
@@ -362,7 +364,7 @@ public class GzBaseUserDaoImpl extends GzAccountDaoImpl implements GzBaseUserDao
 			List<GzBaseUser> bus = null;
 			if (clazz.equals(GzAgent.class))
 			{
-				final String sql = "SELECT * FROM baseUser WHERE parentcode = ? AND rolecode >= 'a' AND rolecode <'p' ORDER BY rolecode,memberid";
+				final String sql = "SELECT * FROM baseUser WHERE parentcode = ? AND roletype=2 ORDER BY rank,memberid";
 				bus = getJdbcTemplate().query(sql,new PreparedStatementSetter() {
 					        public void setValues(PreparedStatement ps) throws SQLException {
 					        	ps.setString(1,parent.getCode());
@@ -372,7 +374,7 @@ public class GzBaseUserDaoImpl extends GzAccountDaoImpl implements GzBaseUserDao
 			else
 			if (clazz.equals(GzDustbin.class))
 			{
-				final String sql = "SELECT * FROM baseUser WHERE parentcode = ? AND rolecode >= 'A' AND rolecode <='Z' ORDER BY rolecode,memberid";
+				final String sql = "SELECT * FROM baseUser WHERE parentcode = ? AND roletype=1 ORDER BY rank,memberid";
 				bus = getJdbcTemplate().query(sql,new PreparedStatementSetter() {
 					        public void setValues(PreparedStatement ps) throws SQLException {
 					        	ps.setString(1,parent.getCode());
@@ -381,7 +383,7 @@ public class GzBaseUserDaoImpl extends GzAccountDaoImpl implements GzBaseUserDao
 			}
 			else				// players
 			{
-				final String sql = "SELECT * FROM baseUser WHERE parentcode = ? AND rolecode == 'p' ORDER BY memberid";
+				final String sql = "SELECT * FROM baseUser WHERE parentcode = ? AND roletype=3  ORDER BY memberid";
 				bus = getJdbcTemplate().query(sql,new PreparedStatementSetter() {
 						        public void setValues(PreparedStatement ps) throws SQLException {
 						        	ps.setString(1,parent.getCode());
@@ -440,9 +442,18 @@ public class GzBaseUserDaoImpl extends GzAccountDaoImpl implements GzBaseUserDao
 	@Override
 	public Double getDownStreamCredit(GzBaseUser user,GzBaseUser parent)
 	{
-		String sql = "SELECT SUM(credit) FROM account WHERE baseuserid IN " +
+		String sql;
+		if (user==null)
+		{
+			sql = "SELECT SUM(credit) FROM account WHERE baseuserid IN " +
+				"(SELECT id FROM baseuser WHERE parentcode='" + parent.getCode() +"' AND enabled=TRUE)";
+		}
+		else
+		{
+			sql = "SELECT SUM(credit) FROM account WHERE baseuserid IN " +
 					"(SELECT id FROM baseuser WHERE parentcode='" + parent.getCode() +"' AND enabled=TRUE) AND " +
 					"baseuserid <> '" + user.getId() +"'";
+		}
 		try
 		{
 			log.trace("sql = "  + sql );
@@ -454,7 +465,7 @@ public class GzBaseUserDaoImpl extends GzAccountDaoImpl implements GzBaseUserDao
 		catch (Exception e)
 		{
 			e.printStackTrace();
-			log.error("getDownStreamCreditLimit : " + e + " - " + e.getMessage());
+			log.error("getDownStreamCredit : " + e + " - " + e.getMessage());
 			return 0.0;
 		}
 	}

@@ -164,7 +164,7 @@ font: 20px Arial, sans-serif;
     Member Management
   </button>
   <div style="margin-left:0px" id="Member" class="collapse">
-    <a href="../adm/registerMember">Register</a><br>
+    <a href="../adm/registerMember">Register Member</a><br>
     <a href="../adm/manageMember">Manage Member</a><br>
     <a href="../adm/activateMember">Activate/Deactivate Member</a><br>
   </div>

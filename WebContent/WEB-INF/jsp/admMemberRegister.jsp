@@ -20,11 +20,11 @@
     <form:form id="myForm" method="post" action="processAdm" modelAttribute="memberForm">
       <input type="hidden" name="${_csrf.parameterName}"  value="${_csrf.token}" />
 
-    <h2 style="color:Cyan">Register Member:</h2>
+    <h2 style="color:Cyan">Register Member</h2>
     <table border="0" cellpadding="3" cellspacing="0" width="800">
     <tbody align="left" style="color:purple; background-color:white}">
     <tr>
-        <td width="30%"><font color="#33ff36" size="2">Member Rank:</font></td>
+        <td width="30%"><font color="#33ff36" size="2">Member Rank</font></td>
         <td width="70%">
          <form:select path="command.role" style='width:20em'>
            <c:forEach items="${memberForm.roles}" var="role" >
@@ -35,26 +35,64 @@
        </td>
      </tr>
     <tr>
-      <td width="30%"><font color="#33ff36" size="2">Contact:</font></td>
+      <td width="30%"><font color="#33ff36" size="2">Contact</font></td>
       <td width="70%"><input type="text" style='width:20em' name="command.profile.contact"
                   value="${memberForm.inCompleteCommand.profile.contact}" /></td>
     </tr>
     <tr>
-      <td width="30%"><font color="#33ff36" size="2">Email:</font></td>
+      <td width="30%"><font color="#33ff36" size="2">Email</font></td>
       <td width="70%"><input type="text" style='width:20em' name="command.profile.email"
                   value="${memberForm.inCompleteCommand.profile.email}" /></td>
     </tr>
     <tr>
-      <td width="30%"><font color="#33ff36" size="2">Phone:</font></td>
+      <td width="30%"><font color="#33ff36" size="2">Phone</font></td>
       <td width="70%"><input type="text" style='width:20em' name="command.profile.phone"
                   value="${memberForm.inCompleteCommand.profile.phone}" /></td>
     </tr>
+    <c:if test="${currUser.role != 'ROLE_ADMIN'}">
     <tr>
-      <td width="30%"><font color="#33ff36" size="2">Nick Name:</font></td>
-      <td width="70%"><input type="text" style='width:20em' name="command.profile.nickname"
-                  value="${memberForm.inCompleteCommand.profile.nickname}" /></td>
+      <td width="30%"><font color="#33ff36" size="2">Bet Commission (%)</font></td>
+      <td width="70%"><input type="text" style='width:20em' name="command.betCommission"
+                  value="${memberForm.inCompleteCommand.betCommission}" /></td>
     </tr>
-
+    <tr>
+      <td width="70%">Max Available</td>
+      <td width="30%">
+      <font color="red" size="3">
+                    <fmt:formatNumber value="${currUser.account.betCommission}"
+                 type="number" maxFractionDigits="2" minFractionDigits="2" />
+      </font>
+      </td>
+    </tr>
+    <tr>
+      <td width="30%"><font color="#33ff36" size="2">Win Commission (%)</font></td>
+      <td width="70%"><input type="text" style='width:20em' name="command.winCommission"
+                  value="${memberForm.inCompleteCommand.winCommission}" /></td>
+    </tr>
+    <tr>
+      <td width="70%">Max Available</td>
+      <td width="30%">
+      <font color="red" size="3">
+                    <fmt:formatNumber value="${currUser.account.winCommission}"
+                 type="number" maxFractionDigits="2" minFractionDigits="2" />
+      </font>
+      </td>
+    </tr>
+    <tr>
+      <td width="30%"><font color="#33ff36" size="2">Credit ($)</font></td>
+      <td width="70%"><input type="text" style='width:20em' name="command.credit"
+                  value="${memberForm.inCompleteCommand.credit}" /></td>
+    </tr>
+    <tr>
+      <td width="70%">Max Available</td>
+      <td width="30%">
+      <font color="red" size="3">
+                    <fmt:formatNumber value="${memberForm.maxCredit}"
+                 type="number" maxFractionDigits="2" minFractionDigits="2" />
+      </font>
+      </td>
+    </tr>
+    </c:if>
     </tbody>
     </table>
     <tr><td><font color="red" size="3">${memberForm.errMsg}</font></td></tr>

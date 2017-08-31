@@ -5,9 +5,9 @@ import java.util.HashMap;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
+import org.gz.account.GzAccount;
 import org.gz.baseuser.GzBaseUser;
 import org.gz.baseuser.GzRole;
 import org.gz.home.persistence.GzPersistenceException;
@@ -34,7 +34,7 @@ public class GzAdmController {
 	@Autowired
 	private GzServices gzServices;
 	
-	//  /gz/adm/logon?user&email=
+	//  /gz/adm/logon?user&user=
 		@RequestMapping(value = "/logon", params="user", method = RequestMethod.GET)
 		public Object signin(String memberId,ModelMap model,HttpServletRequest request) {
 			
@@ -47,15 +47,11 @@ public class GzAdmController {
 			} catch (GzPersistenceException e) {
 				e.printStackTrace();
 				log.error(e.getMessage());
-				return backToSignin(model,"Unexpected error on Admin - contact support");
+				return backToSignin(model,"Unexpected error on member sigin - contact support");
 			}
 		
 			model.addAttribute("currUser",currUser);
 			
-			
-			HttpSession session = request.getSession();						// have to set in the session as end up in other controllers
-			log.trace("Setting session attribute : sCurrUser : " +  currUser );
-			session.setAttribute("sCurrUser", currUser);	
 			
 			return goAdmHome("","",model);
 		}
@@ -151,7 +147,9 @@ public class GzAdmController {
 			GzBaseUser user = (GzBaseUser) model.get("currUser");
 			
 			memberForm.setMemberSummary(populateMemberSummary(user,null,memberForm.getFlatMembers()));
-			
+			double maxCredit = user.getAccount().getCredit(); 
+			double ds = gzServices.getGzHome().getDownStreamCredit(null,user);
+			memberForm.setMaxCredit(maxCredit);
 			
 			memberForm.setRoles(user.getRole().getAvailableRoles());
 			memberForm.setInCompleteCommand(new GzMemberCommand());
@@ -159,7 +157,7 @@ public class GzAdmController {
 			memberForm.getInCompleteCommand().setRole(memberForm.getRoles().get(0));
 			memberForm.getInCompleteCommand().setWinCommission(df1.format(user.getAccount().getWinCommission()));
 			memberForm.getInCompleteCommand().setBetCommission(df1.format(user.getAccount().getBetCommission()));
-			memberForm.getInCompleteCommand().setCredit(df1.format(user.getAccount().getCredit()));		
+			memberForm.getInCompleteCommand().setCredit(df1.format(maxCredit));		
 			memberForm.getInCompleteCommand().setEnabled(user.isEnabled());
 			return memberForm;
 		}
@@ -258,8 +256,20 @@ public class GzAdmController {
 			
 			command.setvPassword("88888888");
 			command.getProfile().setPassword("88888888");
-			
+		
+			GzAccount account = new GzAccount();
 			String errMsg = command.getProfile().validate(command.getvPassword(),role);
+			
+			if (superior.getRole().equals(GzRole.ROLE_ADMIN))
+			{
+				account.setBetCommission(100.0);
+				account.setWinCommission(100.0);
+				account.setCredit(10000000.0);
+			}
+			else
+			if (errMsg.isEmpty())
+				errMsg = validateCommissionsAndCredit(command,superior,account);
+			
 			if (!errMsg.isEmpty())
 			{
 				memberForm = createMemberForm(model);
@@ -271,7 +281,7 @@ public class GzAdmController {
 			GzBaseUser newMember = null;
 			try
 			{
-				newMember = (GzBaseUser) role.getCorrespondingClass().newInstance();
+				newMember = (GzBaseUser) role.getType().getCorrespondingClass().newInstance();
 								
 				newMember.copyProfileValues(command.getProfile());
 				newMember.setParent(superior);
@@ -280,6 +290,7 @@ public class GzAdmController {
 				newMember.setEnabled(true);
 				PasswordEncoder encoder = new BCryptPasswordEncoder();
 				newMember.setPassword(encoder.encode(command.getvPassword()));
+				newMember.setAccount(account);
 				
 				gzServices.getGzHome().storeBaseUser(newMember);
 			}
@@ -295,7 +306,40 @@ public class GzAdmController {
 			return goAdmHome("","Member : " +  newMember.getContact() + " successfully registered with memberId : " + newMember.getMemberId(),model);
 		}
 		
-		
+		private String validateCommissionsAndCredit(GzMemberCommand command,GzBaseUser superior,GzAccount account)
+		{
+			DecimalFormat df = new DecimalFormat("##0.00");
+			String errMsg = "";
+			double maxBc = 100;
+			double maxWc = 100;
+			double maxCredit = Double.MAX_VALUE;
+			if (!superior.getRole().equals(GzRole.ROLE_ADMIN))
+			{
+				maxBc = superior.getAccount().getBetCommission();
+				maxWc = superior.getAccount().getWinCommission();
+				maxCredit = superior.getAccount().getCredit() - gzServices.getGzHome().getDownStreamCredit(null,superior);
+			}
+			try
+			{
+				double bc = Double.parseDouble(command.getBetCommission());
+				double wc = Double.parseDouble(command.getWinCommission());
+				double credit = Double.parseDouble(command.getCredit());
+				if (bc>superior.getAccount().getBetCommission())
+					errMsg = "Bet Commission cannot exceed : " + df.format(maxBc);
+				if (wc>superior.getAccount().getWinCommission())
+					errMsg = "Win Commission cannot exceed : " + df.format(maxWc);
+				if (credit > maxCredit)
+					errMsg = "Credit cannot exceed : " + df.format(maxCredit);
+				account.setBetCommission(bc);
+				account.setWinCommission(wc);
+				account.setCredit(credit);
+			}
+			catch (NumberFormatException e)
+			{
+				errMsg = "Invalid format for numeric values";
+			}
+			return errMsg;
+		}
 
 		
 }

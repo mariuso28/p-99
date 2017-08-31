@@ -12,7 +12,6 @@ public class GzAccount
 	private double credit;
 	private double betCommission;
 	private double winCommission;
-	private int paymentDays;
 	
 	public GzAccount()
 	{
@@ -46,14 +45,6 @@ public class GzAccount
 
 	public void setBaseUser(GzBaseUser baseUser) {
 		this.baseUser = baseUser;
-	}
-
-	public int getPaymentDays() {
-		return paymentDays;
-	}
-
-	public void setPaymentDays(int paymentDays) {
-		this.paymentDays = paymentDays;
 	}
 
 	public double getBetCommission() {

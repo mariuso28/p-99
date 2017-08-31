@@ -103,7 +103,7 @@ public class GzAccountMgr {
 		if (invoice == null)
 		{
 			GregorianCalendar gc = new GregorianCalendar();
-			gc.add(Calendar.HOUR,payer.getAccount().getPaymentDays()*24);
+			gc.add(Calendar.HOUR,5*24);											// currently arbitrary
 			invoice = new GzInvoice(payer.getEmail(),payee.getEmail(),amount,commission,netAmount,now,gc.getTime());
 			home.storeInvoice(invoice);
 		}

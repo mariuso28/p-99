@@ -37,7 +37,7 @@ public class CustomAuthenticationSuccessHandler extends SavedRequestAwareAuthent
 		else
 		if (!authorities.contains("ROLE_PLAY"))
 		{
-			setDefaultTargetUrl("/gz/agnt/processAgent?goMemberHome");
+			setDefaultTargetUrl("/gz/adm/logon?user&memberId=" + user.getUsername());
 		}
 		else
 			setDefaultTargetUrl("/gz/logon/signin?error&message=" + "Unknown role fo : ".replace(" ","%20") + user.getUsername());

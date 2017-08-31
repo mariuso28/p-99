@@ -17,6 +17,8 @@ public class GzMemberForm implements Serializable {
 	private List<GzRole> roles; 
 	private List<GzMemberSummary> flatMembers = new ArrayList<GzMemberSummary>();
 	private GzMemberSummary memberSummary;
+	private double maxCredit;
+	
 	
 	public GzMemberForm()
 	{
@@ -86,5 +88,12 @@ public class GzMemberForm implements Serializable {
 		this.flatMembers = flatMembers;
 	}
 
+	public double getMaxCredit() {
+		return maxCredit;
+	}
+
+	public void setMaxCredit(double maxCredit) {
+		this.maxCredit = maxCredit;
+	}
 
 }

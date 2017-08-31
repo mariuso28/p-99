@@ -87,14 +87,13 @@ public class GzAccountDaoImpl extends NamedParameterJdbcDaoSupport implements Gz
 		// BALANCE DONE INDEPENDENTLY
 		try
 		{
-			getJdbcTemplate().update("UPDATE account set betcommission=?,wincommission=?,credit=?,"
-					+ "paymentDays=? WHERE baseuserid=?"
+			getJdbcTemplate().update("UPDATE account set betcommission=?,wincommission=?,credit=?"
+					+ " WHERE baseuserid=?"
 					, new PreparedStatementSetter() {
 						public void setValues(PreparedStatement psUpdateAccount) throws SQLException {
 							psUpdateAccount.setDouble(1,account.getBetCommission());
 							psUpdateAccount.setDouble(2,account.getWinCommission());
 							psUpdateAccount.setDouble(3,account.getCredit());
-							psUpdateAccount.setInt(4,account.getPaymentDays());
 							psUpdateAccount.setObject(5,account.getBaseUser().getId());
 						}
 					});
