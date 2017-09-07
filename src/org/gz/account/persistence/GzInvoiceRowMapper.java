@@ -26,8 +26,8 @@ public class GzInvoiceRowMapper implements RowMapper<GzInvoice> {
 		invoice.setPaymentId(rs.getLong("paymentid"));
 		Timestamp ts = rs.getTimestamp("duedate");
 		invoice.setDueDate(new Date(ts.getTime()));
-		invoice.setCommission(rs.getDouble("commission"));
-		invoice.setNetAmount(rs.getDouble("netAmount"));
+		invoice.setFlight(rs.getDouble("flight"));
+		invoice.setRetain(rs.getDouble("retain"));
 		String status = rs.getString("status");
 		invoice.setStatus(status.charAt(0));
 	}

@@ -10,12 +10,6 @@ import java.util.List;
 import java.util.UUID;
 
 import org.apache.log4j.Logger;
-import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.PreparedStatementSetter;
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
-
 import org.gz.account.persistence.GzAccountDaoImpl;
 import org.gz.admin.GzAdmin;
 import org.gz.agent.GzAgent;
@@ -26,6 +20,12 @@ import org.gz.dustbin.GzDustbin;
 import org.gz.home.persistence.GzPersistenceException;
 import org.gz.util.GetNextNumberNo4s;
 import org.gz.util.StackDump;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
+import org.springframework.jdbc.core.PreparedStatementSetter;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 
 @Transactional
@@ -65,7 +65,7 @@ public class GzBaseUserDaoImpl extends GzAccountDaoImpl implements GzBaseUserDao
 			    });
 			baseUser.setAuthorities(baseUser.getRole().getAllRoles());
 			storeAuthorities(baseUser);
-			storeAccount(baseUser.getId());
+			storeAccount(baseUser.getAccount());
 		}
 		catch (DataAccessException e)
 		{
@@ -73,7 +73,7 @@ public class GzBaseUserDaoImpl extends GzAccountDaoImpl implements GzBaseUserDao
 			throw new GzPersistenceException("Could not execute : " + e.getMessage());
 		}	
 	}
-	
+
 	@Override
 	public void updateBaseUserProfile(final GzBaseUser baseUser) throws GzPersistenceException {
 		
@@ -223,8 +223,13 @@ public class GzBaseUserDaoImpl extends GzAccountDaoImpl implements GzBaseUserDao
 			populateUser(bus.get(0));
 			return bus.get(0);
 		}
+		catch (IncorrectResultSizeDataAccessException e)
+		{
+			return null;
+		}
 		catch (DataAccessException e)
 		{
+			e.printStackTrace();
 			log.error("Could not execute : " + e.getMessage());
 			throw new GzPersistenceException("Could not execute : " + e.getMessage());
 		}
@@ -614,5 +619,69 @@ public class GzBaseUserDaoImpl extends GzAccountDaoImpl implements GzBaseUserDao
 			log.error("Could not execute : " + e.getMessage());
 			throw new GzPersistenceException("Could not execute : " + e.getMessage());
 		}
+	}
+	
+	@Override
+	public List<GzBaseUser> search(GzBaseUser user,String term,String type) throws GzPersistenceException {
+		try
+		{
+			if (type.equals("email"))
+				return searchByEmail(user,term);
+			if (type.equals("contact"))
+				return searchByContact(user,term);
+			if (type.equals("phone"))
+				return searchByPhone(user,term);
+			return new ArrayList<GzBaseUser>();
+		}
+		catch (DataAccessException e)
+		{
+			log.error("Could not execute : " + e.getMessage());
+			throw new GzPersistenceException("Could not execute : " + e.getMessage());
+		}
+	}
+
+	private List<GzBaseUser> searchByPhone(GzBaseUser user,String term)
+	{
+		String sql = "select * from baseuser where phone=? and parentcode=?";
+		List<GzBaseUser> bus = getJdbcTemplate().query(sql,new PreparedStatementSetter() {
+	        public void setValues(PreparedStatement preparedStatement) throws SQLException {
+	          preparedStatement.setString(1, term.toLowerCase());
+	          preparedStatement.setString(2, user.getCode());
+	        }
+	      }, new GzBaseUserRowMapper1(GzBaseUser.class));
+		return bus;
+	}
+	
+	private List<GzBaseUser> searchByContact(GzBaseUser user,String term)
+	{
+		String sql = "select * from baseuser where lower(contact)=? and parentcode=?";
+			List<GzBaseUser> bus = getJdbcTemplate().query(sql,new PreparedStatementSetter() {
+	        public void setValues(PreparedStatement preparedStatement) throws SQLException {
+	          preparedStatement.setString(1, term.toLowerCase());
+	          preparedStatement.setString(2, user.getCode());
+	        }
+	      }, new GzBaseUserRowMapper1(GzBaseUser.class));
+		if (!bus.isEmpty())
+			return bus;
+		sql = "select * from baseuser where lower(contact) like '%"+ term.toLowerCase() + "%' and parentcode=?";
+		bus = getJdbcTemplate().query(sql,new PreparedStatementSetter() {
+	        public void setValues(PreparedStatement preparedStatement) throws SQLException {
+	          preparedStatement.setString(1, term.toLowerCase());
+	          preparedStatement.setString(2, user.getCode());
+	        }
+	        }, new GzBaseUserRowMapper1(GzBaseUser.class));
+	     return bus;
+	}
+	
+	private List<GzBaseUser> searchByEmail(GzBaseUser user,String term)
+	{
+		String sql = "select * from baseuser where lower(email)=? and parentcode=?";
+		List<GzBaseUser> bus = getJdbcTemplate().query(sql,new PreparedStatementSetter() {
+	        public void setValues(PreparedStatement preparedStatement) throws SQLException {
+	          preparedStatement.setString(1, term.toLowerCase());
+	          preparedStatement.setString(2, user.getCode());
+	        }
+	      }, new GzBaseUserRowMapper1(GzBaseUser.class));
+		return bus;
 	}
 }

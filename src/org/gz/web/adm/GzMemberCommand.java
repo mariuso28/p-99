@@ -1,4 +1,4 @@
-package org.gz.adm;
+package org.gz.web.adm;
 
 import java.io.Serializable;
 
@@ -16,6 +16,7 @@ public class GzMemberCommand implements Serializable {
 	private String betCommission;
 	private String winCommission;
 	private String memberToChangeCode;
+	private String search;
 	
 	public GzMemberCommand()
 	{
@@ -84,6 +85,14 @@ public class GzMemberCommand implements Serializable {
 
 	public void setRole(GzRole role) {
 		this.role = role;
+	}
+
+	public String getSearch() {
+		return search;
+	}
+
+	public void setSearch(String search) {
+		this.search = search;
 	}
 
 

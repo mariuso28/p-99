@@ -25,5 +25,6 @@ public interface GzBaseUserDao extends GzAccountDao{
 	public void setDefaultPasswordForAll(String encoded);
 	public void updateLeafInstance(GzBaseUser bu);
 	public GzBaseUser getBaseUserByMemberId(String memberId) throws GzPersistenceException;
+	public List<GzBaseUser> search(GzBaseUser user, String term, String type) throws GzPersistenceException;
 
 }

@@ -239,9 +239,10 @@ public class GzServices
 
 	private void payInvoice(GzBaseUser payer, GzBaseUser payee, GzInvoice invoice, Date now) throws GzPersistenceException {
 	
-		GzPayment payment = new GzPayment(invoice,now,invoice.getNetAmount());
+	/*	GzPayment payment = new GzPayment(invoice,now,invoice.getNetAmount());
 		gzHome.storePayment(payment);							// invoice payment id set in here too
 		invoice.setPaymentId(payment.getId());
+		*/
 	}
 /*	
 	public void generateAndSendXls(long id,GzBaseUser currUser) throws Exception{

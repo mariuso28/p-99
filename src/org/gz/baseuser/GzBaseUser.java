@@ -34,11 +34,13 @@ public class GzBaseUser
 	
 	public GzBaseUser()
 	{
-		
+		setAccount(new GzAccount());
+		getAccount().setBaseUser(this);
 	}
 	
 	public GzBaseUser(String email)
 	{
+		this();
 		setEmail(email);
 		setEnabled(true);
 	}
@@ -57,6 +59,7 @@ public class GzBaseUser
 	public GzProfile createProfile()
 	{
 		GzProfile profile = new GzProfile();
+		profile.setEmail(getEmail());
 		profile.setNickname(getNickname());
 		profile.setPhone(getPhone());
 		profile.setContact(getContact());

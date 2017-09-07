@@ -46,12 +46,12 @@
 				<c:if test="${sms.parent!=null}">
 						<a href="../adm/manageMemberFromTree?name=${sms.memberId}">
 							<img width="25" height="25"  src='../../img/${sms.rank}.jpeg' border='0'>
-								<font color="blue" size="1">${sms.memberId} - ${sms.contact} (${sms.role} | ${sms.betCommission}%)</font>
+								<font color="blue" size="1">${sms.memberId} - ${sms.contact} (${sms.role} | ${sms.betCommission}% | ${sms.winCommission}% | ${sms.credit})</font>
 						</a>
 				</c:if>
 				<c:if test="${sms.parent==null}">
 						<img width="25" height="25"  src='../../img/${sms.rank}.jpeg' border='0'>
-								<font color="blue" size="1">${sms.memberId} - ${sms.contact} (${sms.role} | ${sms.betCommission}%)</font>
+								<font color="blue" size="1">${sms.memberId} - ${sms.contact} (${sms.role} | ${sms.betCommission}% | ${sms.winCommission}% | ${sms.credit})</font>
 				</c:if>
 			</div>
 	</div>

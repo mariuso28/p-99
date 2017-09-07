@@ -6,18 +6,20 @@ import java.util.UUID;
 
 import org.gz.account.GzAccount;
 import org.gz.account.GzInvoice;
+import org.gz.account.GzNumberRetainer;
 import org.gz.account.GzPayment;
 import org.gz.account.GzRollup;
 import org.gz.account.GzTransaction;
 import org.gz.baseuser.GzBaseUser;
 import org.gz.baseuser.GzRole;
 import org.gz.home.persistence.GzPersistenceException;
+import org.gz.json.GzGameType;
 
 public interface GzAccountDao {
 
 	public void updateAccount(GzAccount account) throws GzPersistenceException;
 	public void updateAccountBalance(GzAccount account,double amount) throws GzPersistenceException;
-	public void storeAccount(UUID baseUserId) throws GzPersistenceException;
+	public void storeAccount(GzAccount account) throws GzPersistenceException;
 	public GzAccount getAccount(GzBaseUser baseUser) throws GzPersistenceException;
 	public void storeTransaction(GzTransaction trans) throws GzPersistenceException;
 	public void updateTransaction(GzTransaction trans) throws GzPersistenceException;
@@ -43,5 +45,9 @@ public interface GzAccountDao {
 	public Map<UUID, Double> getOutstandingInvoiceAmounts(GzBaseUser user) throws GzPersistenceException;
 	public double getDownStreamAccountBalance(GzBaseUser user, GzBaseUser parent) throws GzPersistenceException;
 	
-	
+	public void storeGzNumberRetainer(GzNumberRetainer nr);
+	public void updateGzNumberRetainer(GzNumberRetainer nr);
+	public List<GzNumberRetainer> getGzDefaultNumberRetainersForUser(GzBaseUser user, int digits);
+	public GzNumberRetainer getGzNumberRetainerForUser(GzBaseUser user, GzGameType gameType, String number);
+	public List<GzNumberRetainer> getGzIndividualNumberRetainersForUser(GzBaseUser user, int digits);
 }

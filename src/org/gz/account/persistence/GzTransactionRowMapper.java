@@ -5,9 +5,8 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Date;
 
-import org.springframework.jdbc.core.RowMapper;
-
 import org.gz.account.GzTransaction;
+import org.springframework.jdbc.core.RowMapper;
 
 public class GzTransactionRowMapper implements RowMapper<GzTransaction>
 {

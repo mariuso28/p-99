@@ -1,4 +1,4 @@
-package org.gz.adm;
+package org.gz.web.adm;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,6 +9,7 @@ public class GzMemberSummary {
 
 	private String memberId;
 	private String contact;
+	private String email;
 	private String rank;
 	private String role;
 	private GzMemberSummary parent;
@@ -17,13 +18,16 @@ public class GzMemberSummary {
 	private double betCommission;
 	private double winCommission;
 	private double credit;
+	private String code;
+	private String parentCode;
 	
 	public GzMemberSummary() {
 	}
 	
 	public GzMemberSummary(GzBaseUser bu)
 	{
-		setMemberId(bu.getContact());
+		setContact(bu.getContact());
+		setEmail(bu.getEmail());
 		setMemberId(bu.getMemberId());
 		setRank(Integer.toString(bu.getRole().getRank()));
 		setRole(bu.getRole().getShortCode());
@@ -33,6 +37,8 @@ public class GzMemberSummary {
 		setBetCommission(bu.getAccount().getBetCommission());
 		setWinCommission(bu.getAccount().getWinCommission());
 		setCredit(bu.getAccount().getCredit());
+		setCode(bu.getCode());
+		setParentCode(bu.getParentCode());
 	}
 	
 	public boolean getHasPeer()
@@ -135,6 +141,28 @@ public class GzMemberSummary {
 		this.role = role;
 	}
 
-	
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public String getCode() {
+		return code;
+	}
+
+	public void setCode(String code) {
+		this.code = code;
+	}
+
+	public String getParentCode() {
+		return parentCode;
+	}
+
+	public void setParentCode(String parentCode) {
+		this.parentCode = parentCode;
+	}
 	
 }

@@ -2,6 +2,8 @@ package org.gz.account;
 
 import java.util.Date;
 
+import org.gz.json.GzGameType;
+
 public class GzInvoice extends GzDeposit {
 	
 	private static final long serialVersionUID = -4558471539417421128L;
@@ -10,8 +12,9 @@ public class GzInvoice extends GzDeposit {
 	public static final char STATUSCLOSED = 'C';
 	public static final char STATUSSETTLED = 'S';
 	
-	private double commission;
-	private double netAmount;
+	private double flight;
+	private double retain;
+	private GzGameType gameType;
 	private long parentId;
 	private Date dueDate;
 	private long paymentId;
@@ -21,33 +24,17 @@ public class GzInvoice extends GzDeposit {
 	{
 	}
 
-	public GzInvoice(String payer,String payee,double amount,double commission,double netAmount,Date timestamp,Date dueDate)
+	public GzInvoice(String payer,String payee,double flight,double retain,Date timestamp,Date dueDate,GzGameType gameType)
 	{
 		setPayer(payer);
 		setPayee(payee);
 		setType(GzXaction.XTYPEINVOICE);
-		setAmount(amount);
 		setTimestamp(timestamp);
 		setDueDate(dueDate);
-		setCommission(commission);
-		setNetAmount(netAmount);
+		setFlight(flight);
+		setRetain(retain);
+		setGameType(gameType);
 		setPaymentId(-1L);
-	}
-
-	public double getCommission() {
-		return commission;
-	}
-
-	public void setCommission(double commission) {
-		this.commission = commission;
-	}
-
-	public double getNetAmount() {
-		return netAmount;
-	}
-
-	public void setNetAmount(double netAmount) {
-		this.netAmount = netAmount;
 	}
 
 	public long getParentId() {
@@ -81,11 +68,35 @@ public class GzInvoice extends GzDeposit {
 	public void setStatus(char status) {
 		this.status = status;
 	}
-
+/*
 	public void update(double amount2, double commission2, double netAmount2,double stake2,char winstake) {
 		amount += amount2;
 		commission += commission2;
 		netAmount += netAmount2;
+	}
+*/
+	public double getRetain() {
+		return retain;
+	}
+
+	public void setRetain(double retain) {
+		this.retain = retain;
+	}
+
+	public double getFlight() {
+		return flight;
+	}
+
+	public void setFlight(double flight) {
+		this.flight = flight;
+	}
+
+	public GzGameType getGameType() {
+		return gameType;
+	}
+
+	public void setGameType(GzGameType gameType) {
+		this.gameType = gameType;
 	}
 
 	

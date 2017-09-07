@@ -3,14 +3,16 @@ package org.gz.account;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.List;
 
 import org.apache.log4j.Logger;
-
 import org.gz.agent.GzAgent;
 import org.gz.baseuser.GzBaseUser;
 import org.gz.baseuser.GzRole;
+import org.gz.baseuser.GzRoleType;
 import org.gz.home.GzHome;
 import org.gz.home.persistence.GzPersistenceException;
+import org.gz.json.GzGameType;
 import org.gz.services.GzServices;
 
 public class GzAccountMgr {
@@ -23,62 +25,46 @@ public class GzAccountMgr {
 	{
 	}
 	
-	public void createTransactions(GzBaseUser player,double turnover,double bankerTurnover,String source) throws GzPersistenceException
+	public GzNumberRetainerSet getGzNumberRetainerSet(int digits,GzBaseUser user)
+	{
+		List<GzNumberRetainer> defaults = home.getGzDefaultNumberRetainersForUser(user, digits);
+		GzNumberRetainerSet nrs = new GzNumberRetainerSet();
+		nrs.storeDefaults(defaults);
+		List<GzNumberRetainer> indivs = home.getGzIndividualNumberRetainersForUser(user, digits);
+		for (GzNumberRetainer nr : indivs)
+			nrs.storeIndividual(nr);
+		nrs.setDigits(digits);
+		return nrs;
+	}
+	
+	public void createTransactions(GzBaseUser player,double amount,String source,GzGameType gameType,String number) throws GzPersistenceException
 	{
 		log.info("Creating transactions for : " + player + " source: " + source);
 		GregorianCalendar gc = new GregorianCalendar();
 		Date now = gc.getTime();
-		GzAgent agent = (GzAgent) player.getParent();
 		
-		getMemberChain(agent);													// need to populate the parent chain if not already		
 		
-		if (turnover>0)
-			createTransactionsForPlayer(player,turnover,agent,source,now);
-		if (bankerTurnover>0)
-			createTransactionsForBanker(player,bankerTurnover,agent,source,now);
+		if (amount<=0)
+			return;
+		
+		getMemberChain(player);			
+		GzAgent agent = (GzAgent) player.getParent();				// need to populate the parent chain if not already		
+		createTransactionsForPlayer(player,amount,agent,source,gameType,now,number);
 	}
 
-	private void createTransactionsForBanker(GzBaseUser player,double amount,GzAgent agent,String source,Date now) throws GzPersistenceException
+	private void createTransactionsForPlayer(GzBaseUser player,double amount,GzAgent agent,String source,GzGameType gameType,Date now,String number) throws GzPersistenceException
 	{
-		GzBaseUser topAgent = getMemberChain(player);	
+		GzTransaction transaction = new GzTransaction(player.getMemberId(),agent.getMemberId(),GzTransaction.BET,amount,now,gameType,source,number);
+	//	GzNumberRetainer nr = home.getGzNumberRetainerForUser(player, gameType, number);
+	//	double retain = calcRetain(amount,player.getAccount().getBetCommission(),nr.getRetain());
+	//	double flight = calcFlight(amount,retain);
 		
-		double commission = (topAgent.getAccount().getWinCommission()/100.0) * amount;
-		double netAmount = amount - commission;
-		
-		GzTransaction transaction = new GzTransaction(agent.getEmail(),player.getEmail(),GzTransaction.BANKERTURNOVER,netAmount,now,source);
-		
-		GzInvoice invoice = storeOrUpdateInvoice(agent,player,amount,-1*commission,netAmount,now,null);
-		
+		double flight = amount;
+		GzInvoice invoice = storeOrUpdateInvoice(player,agent,flight,0,now,null,gameType);
 		transaction.setInvoiceId(invoice.getId());
 		home.storeTransaction(transaction);
-		
-		home.updateAccountBalance(agent.getAccount(),-1*netAmount);
-		home.updateAccountBalance(player.getAccount(),netAmount);
-		
-		while (true)
-		{
-			GzAgent parent = (GzAgent) agent.getParent();
-			if (parent==null || parent.getRole().equals(GzRole.ROLE_ADMIN))
-				break;
-			commission = ((topAgent.getAccount().getWinCommission() - agent.getAccount().getWinCommission())/100.0) * amount;
-			netAmount = amount - commission;
-			
-			invoice = storeOrUpdateInvoice(parent,agent,amount,-1*commission,netAmount,now,invoice);
-			
-			home.updateAccountBalance(parent.getAccount(),-1*netAmount);
-			home.updateAccountBalance(agent.getAccount(),netAmount);
-			agent = parent;
-		}
-	}
-	
-	private void createTransactionsForPlayer(GzBaseUser player,double amount,GzAgent agent,String source,Date now) throws GzPersistenceException
-	{
-		GzTransaction transaction = new GzTransaction(player.getEmail(),agent.getEmail(),GzTransaction.PLAYERTURNOVER,amount,now,source);
-		GzInvoice invoice = storeOrUpdateInvoice(player,agent,amount,0,amount,now,null);
-		transaction.setInvoiceId(invoice.getId());
-		home.storeTransaction(transaction);
-		home.updateAccountBalance(agent.getAccount(),amount);
-		home.updateAccountBalance(player.getAccount(),-1*amount);
+//		home.updateAccountBalance(agent.getAccount(),amount);
+//		home.updateAccountBalance(player.getAccount(),-1*amount);
 		
 		while (true)
 		{
@@ -86,32 +72,47 @@ public class GzAccountMgr {
 			if (parent==null || parent.getRole().equals(GzRole.ROLE_ADMIN))
 				break;
 			
-			double commission = (agent.getAccount().getBetCommission()/100.0) * amount;
-			double netAmount = amount - commission;
-			invoice = storeOrUpdateInvoice(agent,parent,amount,commission,netAmount,now,invoice);
+			GzNumberRetainer nr = home.getGzNumberRetainerForUser(agent, gameType, number);
+			double retain = calcRetain(flight,agent.getAccount().getBetCommission(),nr.getRetain());
+			flight = calcFlight(flight,retain);
+			invoice = storeOrUpdateInvoice(agent,parent,flight,retain,now,invoice,gameType);
 			
-			home.updateAccountBalance(agent.getAccount(),-1*netAmount);
-			home.updateAccountBalance(parent.getAccount(),netAmount);
+	//		home.updateAccountBalance(agent.getAccount(),-1*netAmount);
+	//		home.updateAccountBalance(parent.getAccount(),netAmount);
 			agent = parent;
 		}
 	}
 	
-	private GzInvoice storeOrUpdateInvoice(GzBaseUser payer,GzBaseUser payee,double amount,double commission,
-			double netAmount,Date now,GzInvoice subInvoice) throws GzPersistenceException
+	private double calcRetain(double amount,double commission,double retain)
 	{
-		GzInvoice invoice = home.getOpenInvoice(payer.getEmail(),payee.getEmail());
-		if (invoice == null)
-		{
+		commission = commission / 100.0;
+		if (amount * commission > retain)
+			return retain;
+		return amount * commission;
+	}
+	
+	private double calcFlight(double amount,double retain)
+	{
+		return amount - retain;
+	}
+	
+	private GzInvoice storeOrUpdateInvoice(GzBaseUser payer,GzBaseUser payee,double flight,double retain,
+			Date now,GzInvoice subInvoice,GzGameType gameType) throws GzPersistenceException
+	{
+//		GzInvoice invoice = home.getOpenInvoice(payer.getEmail(),payee.getEmail());
+	//	if (invoice == null)
+	//	{
 			GregorianCalendar gc = new GregorianCalendar();
 			gc.add(Calendar.HOUR,5*24);											// currently arbitrary
-			invoice = new GzInvoice(payer.getEmail(),payee.getEmail(),amount,commission,netAmount,now,gc.getTime());
+			GzInvoice invoice = new GzInvoice(payer.getMemberId(),payee.getMemberId(),flight,retain,now,gc.getTime(),gameType);
 			home.storeInvoice(invoice);
-		}
+	/*	}
 		else
 		{
 			double useAmount = amount;
 			home.updateInvoice(useAmount, commission, netAmount,invoice.getId());
 		}
+		*/
 		if (subInvoice != null)
 			home.updateSubInvoice(subInvoice,invoice);
 		return invoice;
@@ -121,12 +122,12 @@ public class GzAccountMgr {
 	private GzBaseUser getMemberChain(GzBaseUser bu) throws GzPersistenceException
 	{
 		GzBaseUser parent = bu;
-		while (bu.getParentCode().charAt(0) != GzRole.ROLE_ADMIN.getCode())
+		while (!bu.getRole().getType().equals(GzRoleType.DUSTBIN))
 		{
 			parent = bu.getParent();
 			if (parent == null)												// get from db
 			{
-				parent = home.getAgentByCode(bu.getParentCode());
+				parent = home.getBaseUserByCode(bu.getParentCode());
 				bu.setParent(parent);
 			}
 			bu = parent;

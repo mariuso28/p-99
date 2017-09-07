@@ -69,7 +69,7 @@ function submitForgotPassword()
     					<tr>
     						<td><font style="color:#aaa; font-size:14px; font-weight:700;">memberId:</font></td>
               	<td><input id="memberIdDefault" class="inTable form-control" type="text"
-    							name="memberId" value="0001" style="height:24px;"/></td>
+    							name="memberId" value="0002" style="height:24px;"/></td>
     					</tr>
               <tr>
                 <td>&nbsp;</td>

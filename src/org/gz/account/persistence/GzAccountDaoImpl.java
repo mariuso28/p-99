@@ -11,16 +11,11 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.apache.log4j.Logger;
-import org.springframework.dao.DataAccessException;
-import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
-import org.springframework.jdbc.core.PreparedStatementSetter;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcDaoSupport;
-
 import org.gz.account.GzAccount;
 import org.gz.account.GzBaseTransaction;
 import org.gz.account.GzDeposit;
 import org.gz.account.GzInvoice;
+import org.gz.account.GzNumberRetainer;
 import org.gz.account.GzPayment;
 import org.gz.account.GzRollup;
 import org.gz.account.GzTransaction;
@@ -28,6 +23,13 @@ import org.gz.account.GzWithdrawl;
 import org.gz.baseuser.GzBaseUser;
 import org.gz.baseuser.GzRole;
 import org.gz.home.persistence.GzPersistenceException;
+import org.gz.home.persistence.GzPersistenceRuntimeException;
+import org.gz.json.GzGameType;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.PreparedStatementSetter;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcDaoSupport;
 
 
 public class GzAccountDaoImpl extends NamedParameterJdbcDaoSupport implements GzAccountDao {
@@ -62,15 +64,19 @@ public class GzAccountDaoImpl extends NamedParameterJdbcDaoSupport implements Gz
 		}	
 	}
 	
-	public void storeAccount(final UUID baseUserId) throws GzPersistenceException {
+	public void storeAccount(final GzAccount account) throws GzPersistenceException {
 		
 		try
 		{
-			getJdbcTemplate().update("INSERT INTO account (baseuserid,balance,credit,wincommission,betcommission) "
-					+ "VALUES( ?,0.0,0.0,0.0,0.0)"
+			getJdbcTemplate().update("INSERT INTO account (baseuserid,balance,betcommission,wincommission,credit) "
+					+ "VALUES( ?,?,?,?,?)"
 					, new PreparedStatementSetter() {
-						public void setValues(PreparedStatement psStoreAccount) throws SQLException {
-							psStoreAccount.setObject(1,baseUserId);
+						public void setValues(PreparedStatement psUpdateAccount) throws SQLException {
+							psUpdateAccount.setObject(1,account.getBaseUser().getId());
+							psUpdateAccount.setDouble(2,account.getBalance());
+							psUpdateAccount.setDouble(3,account.getBetCommission());
+							psUpdateAccount.setDouble(4,account.getWinCommission());
+							psUpdateAccount.setDouble(5,account.getCredit());
 						}
 					});
 		}
@@ -94,7 +100,7 @@ public class GzAccountDaoImpl extends NamedParameterJdbcDaoSupport implements Gz
 							psUpdateAccount.setDouble(1,account.getBetCommission());
 							psUpdateAccount.setDouble(2,account.getWinCommission());
 							psUpdateAccount.setDouble(3,account.getCredit());
-							psUpdateAccount.setObject(5,account.getBaseUser().getId());
+							psUpdateAccount.setObject(4,account.getBaseUser().getId());
 						}
 					});
 		}
@@ -236,21 +242,20 @@ public class GzAccountDaoImpl extends NamedParameterJdbcDaoSupport implements Gz
 		
 		try
 		{
-			getJdbcTemplate().update("INSERT INTO xaction (payer,payee,type,amount,commission,netamount,timestamp,duedate,status,paymentid)"
+			getJdbcTemplate().update("INSERT INTO xaction (payer,payee,type,flight,retain,timestamp,duedate,status,paymentid,gameType)"
 					+ "VALUES( ?,?,?,?,?,?,?,?,?,? )"
 					, new PreparedStatementSetter() {
 						public void setValues(PreparedStatement psStoreInvoice) throws SQLException {
 							psStoreInvoice.setString(1,invoice.getPayer());
 							psStoreInvoice.setString(2,invoice.getPayee());
 							psStoreInvoice.setString(3,String.valueOf(invoice.getType()));
-							psStoreInvoice.setDouble(4,invoice.getAmount());
-							psStoreInvoice.setDouble(5,invoice.getCommission());
-							psStoreInvoice.setDouble(6,invoice.getNetAmount());
-							psStoreInvoice.setTimestamp(7,t1);
-							psStoreInvoice.setTimestamp(8,dueDate);
-							psStoreInvoice.setString(9,String.valueOf('O'));
-							psStoreInvoice.setLong(10,-1L);
-
+							psStoreInvoice.setDouble(4,invoice.getFlight());
+							psStoreInvoice.setDouble(5,invoice.getRetain());
+							psStoreInvoice.setTimestamp(6,t1);
+							psStoreInvoice.setTimestamp(7,dueDate);
+							psStoreInvoice.setString(8,String.valueOf('O'));
+							psStoreInvoice.setLong(9,-1L);
+							psStoreInvoice.setString(10,invoice.getGameType().name());
 						}
 					});
 			getXactionId(invoice);
@@ -264,7 +269,7 @@ public class GzAccountDaoImpl extends NamedParameterJdbcDaoSupport implements Gz
 	
 	@Override
 	public synchronized void storePayment(final GzPayment payment) throws GzPersistenceException {
-		
+		/*
 		final Timestamp t1 = new Timestamp(payment.getTimestamp().getTime());
 		
 		try
@@ -292,8 +297,9 @@ public class GzAccountDaoImpl extends NamedParameterJdbcDaoSupport implements Gz
 			log.error("Could not execute : " + e.getMessage());
 			throw new GzPersistenceException("Could not execute : " + e.getMessage());
 		}	
+		*/
 	}
-	
+	/*
 	private void updateInvoicePaymentId(final long paymentId,final long invoiceId, final Timestamp t1) throws GzPersistenceException
 	{
 		try
@@ -313,6 +319,7 @@ public class GzAccountDaoImpl extends NamedParameterJdbcDaoSupport implements Gz
 			throw new GzPersistenceException("Could not execute : " + e.getMessage());
 		}	
 	}
+	*/
 	
 	private synchronized void storeBaseTransaction(final GzBaseTransaction xaction) throws GzPersistenceException {
 		
@@ -484,7 +491,7 @@ public class GzAccountDaoImpl extends NamedParameterJdbcDaoSupport implements Gz
 
 	@Override
 	public void updateInvoice(final GzInvoice invoice) throws GzPersistenceException {
-		
+	/*	
 		try
 		{
 			getJdbcTemplate().update("UPDATE xaction SET amount=?,commission=?,netAmount=? WHERE id=?"
@@ -502,6 +509,7 @@ public class GzAccountDaoImpl extends NamedParameterJdbcDaoSupport implements Gz
 			log.error("Could not execute : " + e.getMessage());
 			throw new GzPersistenceException("Could not execute : " + e.getMessage());
 		}	
+		*/
 	}
 	
 	@Override
@@ -707,6 +715,148 @@ public class GzAccountDaoImpl extends NamedParameterJdbcDaoSupport implements Gz
 		log.error("getDownStreamAccount : " + e + " - " + e.getMessage());
 		return 0.0;
 	}
+	}
+	
+	@Override
+	public void storeGzNumberRetainer(GzNumberRetainer nr)
+	{
+		log.info("storeGzNumberRetainer " + nr);
+		try
+		{
+			getJdbcTemplate().update("INSERT INTO numberretainer (gametype,defaultnumber,number,memberid,retain,digits) "
+					+ "VALUES( ?, ?, ?, ?, ?, ?)"
+					, new PreparedStatementSetter() {
+						public void setValues(PreparedStatement ps) throws SQLException {
+							ps.setString(1,nr.getGameType().name());
+							ps.setBoolean(2,nr.isDefaultNumber());
+							ps.setString(3,nr.getNumber());
+							ps.setString(4,nr.getMemberId());
+							ps.setDouble(5,nr.getRetain());
+							ps.setInt(6,nr.getGameType().getDigits());
+						}
+					});
+		}
+		catch (DataAccessException e)
+		{
+			throw new GzPersistenceRuntimeException(e.getMessage());
+		}
+	}
+	
+	@Override
+	public void updateGzNumberRetainer(GzNumberRetainer nr)
+	{
+		log.info("updateGzNumberRetainer " + nr);
+		try
+		{
+			getJdbcTemplate().update("UPDATE numberretainer SET retain=? WHERE id=?"
+					, new PreparedStatementSetter() {
+						public void setValues(PreparedStatement ps) throws SQLException {
+							ps.setDouble(1,nr.getRetain());
+							ps.setLong(2,nr.getId());
+
+						}
+					});
+		}
+		catch (DataAccessException e)
+		{
+			throw new GzPersistenceRuntimeException(e.getMessage());
+		}
+	}
+	
+	@Override
+	public List<GzNumberRetainer> getGzDefaultNumberRetainersForUser(GzBaseUser user,int digits)
+	{
+		log.info("getGzDefaultNumberRetainersForUser " + user);
+		try
+		{
+			String sql = "SELECT * FROM numberretainer WHERE memberid=? AND defaultNumber=true AND digits=? ORDER BY gametype";
+			List<GzNumberRetainer> nrs = getJdbcTemplate().query(sql
+					, new PreparedStatementSetter() {
+						public void setValues(PreparedStatement ps) throws SQLException {
+							ps.setString(1,user.getMemberId());
+							ps.setInt(2,digits);
+						}
+					}, BeanPropertyRowMapper.newInstance(GzNumberRetainer.class));
+			if (nrs.isEmpty())
+			{
+				storeDefaultNumberRetainers(user);
+				nrs = getJdbcTemplate().query(sql
+						, new PreparedStatementSetter() {
+							public void setValues(PreparedStatement ps) throws SQLException {
+								ps.setString(1,user.getMemberId());
+								ps.setInt(2,digits);
+							}
+						}, BeanPropertyRowMapper.newInstance(GzNumberRetainer.class));
+			}
+			return nrs;
+		}
+		catch (DataAccessException e)
+		{
+			throw new GzPersistenceRuntimeException(e.getMessage());
+		}
+	}
+	
+	@Override
+	public List<GzNumberRetainer> getGzIndividualNumberRetainersForUser(GzBaseUser user,int digits)
+	{
+		log.info("getGzIndividualNumberRetainersForUser " + user);
+		try
+		{
+			String sql = "SELECT * FROM numberretainer WHERE memberid=? AND defaultNumber=false AND digits=? ORDER BY number,gametype";
+			List<GzNumberRetainer> nrs = getJdbcTemplate().query(sql
+					, new PreparedStatementSetter() {
+						public void setValues(PreparedStatement ps) throws SQLException {
+							ps.setString(1,user.getMemberId());
+							ps.setInt(2,digits);
+						}
+					}, BeanPropertyRowMapper.newInstance(GzNumberRetainer.class));
+			return nrs;
+		}
+		catch (DataAccessException e)
+		{
+			throw new GzPersistenceRuntimeException(e.getMessage());
+		}
+	}
+	
+	private void storeDefaultNumberRetainers(GzBaseUser baseUser) {
+		
+		for (GzGameType gt : GzGameType.values())
+		{
+			storeGzNumberRetainer(new GzNumberRetainer(baseUser.getMemberId(),gt,"XXXX",true,0.0));
+		}
+	}
+	
+	@Override
+	public GzNumberRetainer getGzNumberRetainerForUser(GzBaseUser user,GzGameType gameType,String number)
+	{
+		log.info("getGzDefaultNumberRetainersForUser " + user);
+		try
+		{
+			List<GzNumberRetainer> nr = getJdbcTemplate().query("Select * FROM numberretainer WHERE memberid=? AND defaultnumber=false AND gametype=? AND number=?"
+					, new PreparedStatementSetter() {
+						public void setValues(PreparedStatement ps) throws SQLException {
+							ps.setString(1,user.getMemberId());
+							ps.setString(2,gameType.name());
+							ps.setString(3,number);
+						}
+					}, BeanPropertyRowMapper.newInstance(GzNumberRetainer.class));
+			if (!nr.isEmpty())
+				return nr.get(0);
+			nr = getJdbcTemplate().query("Select * FROM numberretainer WHERE memberid=? AND defaultnumber=true AND gametype=?"
+					, new PreparedStatementSetter() {
+						public void setValues(PreparedStatement ps) throws SQLException {
+							ps.setString(1,user.getMemberId());
+							ps.setString(2,gameType.name());
+						}
+					}, BeanPropertyRowMapper.newInstance(GzNumberRetainer.class));
+			if (!nr.isEmpty())
+				return nr.get(0);
+			return null;
+		}
+		catch (DataAccessException e)
+		{
+			throw new GzPersistenceRuntimeException(e.getMessage());
+		}
 	}
 	
 }

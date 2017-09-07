@@ -13,6 +13,7 @@ import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.log4j.Logger;
 import org.gz.account.GzAccount;
 import org.gz.account.GzInvoice;
+import org.gz.account.GzNumberRetainer;
 import org.gz.account.GzPayment;
 import org.gz.account.GzRollup;
 import org.gz.account.GzTransaction;
@@ -27,6 +28,7 @@ import org.gz.baseuser.GzBaseUser;
 import org.gz.baseuser.GzRole;
 import org.gz.baseuser.persistence.GzBaseUserDao;
 import org.gz.home.GzHome;
+import org.gz.json.GzGameType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.multipart.MultipartFile;
@@ -38,7 +40,7 @@ public class GzHomeDaoImpl implements GzHome {
 	private GzBaseUserDao gzBaseUserDao;
 	@Autowired
 	private GzAdminDao gzAdminDao;
-//	@Autowired
+	@Autowired
 	private GzAgentDao gzAgentDao;
 	@Autowired
 	private GzAccountDao gzAccountDao;
@@ -354,5 +356,39 @@ public class GzHomeDaoImpl implements GzHome {
 		return gzBaseUserDao.getBaseUserByMemberId(memberId);
 	}
 
+	@Override
+	public List<GzBaseUser> search(GzBaseUser user, String term,String type) throws GzPersistenceException {
 	
+		return gzBaseUserDao.search(user,term,type);
+	}
+	
+	@Override
+	public void storeGzNumberRetainer(GzNumberRetainer nr)
+	{
+		gzAccountDao.storeGzNumberRetainer(nr);
+	}
+	
+	@Override
+	public void updateGzNumberRetainer(GzNumberRetainer nr)
+	{
+		gzAccountDao.updateGzNumberRetainer(nr);
+	}
+	
+	@Override
+	public List<GzNumberRetainer> getGzDefaultNumberRetainersForUser(GzBaseUser user, int digits)
+	{
+		return gzAccountDao.getGzDefaultNumberRetainersForUser(user, digits);
+	}
+	
+	@Override
+	public GzNumberRetainer getGzNumberRetainerForUser(GzBaseUser user, GzGameType gameType, String number)
+	{
+		return gzAccountDao.getGzNumberRetainerForUser(user, gameType, number);
+	}
+	
+	@Override
+	public List<GzNumberRetainer> getGzIndividualNumberRetainersForUser(GzBaseUser user, int digits)
+	{
+		return gzAccountDao.getGzIndividualNumberRetainersForUser(user, digits);
+	}
 }

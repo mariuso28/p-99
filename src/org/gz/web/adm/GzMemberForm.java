@@ -1,4 +1,4 @@
-package org.gz.adm;
+package org.gz.web.adm;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -16,6 +16,7 @@ public class GzMemberForm implements Serializable {
 	private String infoMsg;
 	private List<GzRole> roles; 
 	private List<GzMemberSummary> flatMembers = new ArrayList<GzMemberSummary>();
+	private List<GzMemberSummary> chooseMembers = new ArrayList<GzMemberSummary>();
 	private GzMemberSummary memberSummary;
 	private double maxCredit;
 	
@@ -94,6 +95,14 @@ public class GzMemberForm implements Serializable {
 
 	public void setMaxCredit(double maxCredit) {
 		this.maxCredit = maxCredit;
+	}
+
+	public List<GzMemberSummary> getChooseMembers() {
+		return chooseMembers;
+	}
+
+	public void setChooseMembers(List<GzMemberSummary> chooseMembers) {
+		this.chooseMembers = chooseMembers;
 	}
 
 }

@@ -7,6 +7,6 @@ public class GzServicesException extends Exception {
 
 	public GzServicesException(String message)
 	{
-		super("GzServicesException - " + message);
+		super(message);
 	}
 }

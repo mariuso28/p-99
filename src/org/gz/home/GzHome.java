@@ -9,6 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import org.gz.account.GzAccount;
 import org.gz.account.GzInvoice;
+import org.gz.account.GzNumberRetainer;
 import org.gz.account.GzPayment;
 import org.gz.account.GzRollup;
 import org.gz.account.GzTransaction;
@@ -19,6 +20,7 @@ import org.gz.agent.GzAgent;
 import org.gz.baseuser.GzBaseUser;
 import org.gz.baseuser.GzRole;
 import org.gz.home.persistence.GzPersistenceException;
+import org.gz.json.GzGameType;
 
 public interface GzHome 
 {	
@@ -80,7 +82,14 @@ public interface GzHome
 	public List<String> getColumns(String table) throws GzPersistenceException;
 	public GzBaseUser getBaseUserByMemberId(String memberId) throws GzPersistenceException;
 
+	public List<GzBaseUser> search(GzBaseUser user, String term, String type) throws GzPersistenceException;
 
+
+	public void storeGzNumberRetainer(GzNumberRetainer nr);
+	public void updateGzNumberRetainer(GzNumberRetainer nr);
+	public List<GzNumberRetainer> getGzDefaultNumberRetainersForUser(GzBaseUser user, int digits);
+	public GzNumberRetainer getGzNumberRetainerForUser(GzBaseUser user, GzGameType gameType, String number);
+	public List<GzNumberRetainer> getGzIndividualNumberRetainersForUser(GzBaseUser user, int digits);
 	
 	
 }

@@ -161,18 +161,25 @@ font: 20px Arial, sans-serif;
 <div class="container">
 <div class="fixed1">
   <button id="adminButton"  class="buttonExpandLabel" type="button" data-toggle="collapse" data-target="#Member">
-    Member Management
+    Manage Members
   </button>
   <div style="margin-left:0px" id="Member" class="collapse">
     <a href="../adm/registerMember">Register Member</a><br>
-    <a href="../adm/manageMember">Manage Member</a><br>
+    <a href="../adm/manageMemberAccount">Manage Member Account</a><br>
     <a href="../adm/activateMember">Activate/Deactivate Member</a><br>
   </div>
   <button id="gButton"  class="buttonExpandLabel" type="button" data-toggle="collapse" data-target="#General">
     General
   </button>
   <div style="margin-left:0px" id="General" class="collapse">
-    <a href="../admMember/accountDetails">Account Details</a><br>
+    <a href="../adm/memberProfile">Manage Profile</a><br>
+  </div>
+  <button id="numberButton"  class="buttonExpandLabel" type="button" data-toggle="collapse" data-target="#Number">
+    Manage Numbers
+  </button>
+  <div style="margin-left:0px" id="Number" class="collapse">
+    <a href="../number/manage4D">4D Numbers</a><br>
+    <a href="../number/manage3D">3D Numbers</a><br>
   </div>
   <button id="rButton"  class="buttonExpandLabel" type="button" data-toggle="collapse" data-target="#Report">
     Report
