@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.servlet.ModelAndView;
 
 @Controller
-@SessionAttributes({"currUser","currUserModify"})
+@SessionAttributes({"currUser","currUserModify","currTargetUser"})
 
 @RequestMapping("/adm")
 public class GzAdmController {
@@ -93,35 +93,50 @@ public class GzAdmController {
 		private void createChooseMembers(GzMemberForm memberForm,ModelMap model)
 		{
 			GzBaseUser currUser = (GzBaseUser) model.get("currUser");
+			
 			List<GzMemberSummary> msList = new ArrayList<GzMemberSummary>();
 			gzServices.getGzHome().getDownstreamForParent(currUser);
 			for (GzBaseUser bu : currUser.getMembers())
-				msList.add(new GzMemberSummary(bu));
+			{
+				GzMemberSummary ms = new GzMemberSummary(bu);
+				ms.setParent(memberForm.getMembers().get(ms.getParentCode()));
+				msList.add(ms);
+			}
 			memberForm.setChooseMembers(msList);
 		}
 		
 		@RequestMapping(value = "/manageMemberFromTree", method = RequestMethod.GET)
-		public ModelAndView manageMemberFromTree(ModelMap model,String name)
+		public Object manageMemberFromTree(ModelMap model,String name)
 		{
-			GzMemberForm memberForm = createMemberForm(model);
-			createChooseMembers(memberForm,model);
-			try
-			{
-				GzBaseUser bu = gzServices.getGzHome().getBaseUserByMemberId(name);
-				if (bu == null)
-				{
-					throw new GzPersistenceException("Member does not exist");
-				}
-				setUpMember(model,memberForm,bu);
-			}
-			catch (Exception e)
-			{
+			GzBaseUser bu;
+			try {
+				bu = gzServices.getGzHome().getBaseUserByMemberId(name);
+			} catch (GzPersistenceException e) {
 				e.printStackTrace();
-				memberForm.setErrMsg("Error managing member - contact support.");
-				return new ModelAndView("admMemberManage","memberForm", memberForm);
+				return goAdmHome("Error managing member - contact support","",model);
+			}
+			if (bu == null)
+			{
+				log.error("Member : " + name + " does not exist");
+				return goAdmHome("Member : " + name + " does not exist","",model);
 			}
 			
-			return new ModelAndView("admMemberManage","memberForm", memberForm);
+			model.addAttribute("currTargetUser",bu);
+			GzBaseUser currUser = (GzBaseUser) model.get("currUser");
+			if (bu.getParentCode().equals(currUser.getCode()))
+				return manageMemberAccount(model,bu);
+			
+			GzMemberForm memberForm = createMemberForm(model);
+			createChooseMembers(memberForm,model);
+			setUpMember(model,memberForm,bu);
+			return new ModelAndView("admMemberDetails","memberForm", memberForm);
+		}
+		
+		private ModelAndView manageMemberAccount(ModelMap model,GzBaseUser bu)
+		{
+			GzMemberForm memberForm = createMemberAccountForm(model);
+			setUpMember(model,memberForm,bu);
+			return new ModelAndView("admMemberManageAccount","memberForm", memberForm);
 		}
 		
 		private void setUpMember(ModelMap model,GzMemberForm memberForm,GzBaseUser bu)
@@ -143,8 +158,11 @@ public class GzAdmController {
 			GzMemberForm memberForm = new GzMemberForm();
 			GzBaseUser user = (GzBaseUser) model.get("currUser");
 			
-			memberForm.setMemberSummary(populateMemberSummary(user,null,memberForm.getFlatMembers()));
-			double maxCredit = gzServices.getGzHome().getDownStreamCredit(null,user);
+			GzMemberSummary ms = new GzMemberSummary(user);
+			memberForm.getMembers().put(user.getCode(), ms);
+			
+			memberForm.setMemberSummary(populateMemberSummary(user,null,memberForm));
+			double maxCredit = user.getAccount().getCredit() - gzServices.getGzHome().getDownStreamCredit(null,user);
 			memberForm.setMaxCredit(maxCredit);	
 			memberForm.setRoles(user.getRole().getAvailableRoles());
 			memberForm.setInCompleteCommand(new GzMemberCommand());
@@ -159,7 +177,7 @@ public class GzAdmController {
 			
 		private GzMemberForm createMemberAccountForm(ModelMap model)
 		{
-			GzMemberForm memberForm = new GzMemberForm();
+			GzMemberForm memberForm = createMemberForm(model);
 			GzBaseUser user = (GzBaseUser) model.get("currUser");
 			createChooseMembers(memberForm,model);
 			double maxCredit = gzServices.getGzHome().getDownStreamCredit(null,user);
@@ -167,18 +185,19 @@ public class GzAdmController {
 			return memberForm;
 		}
 		
-		private GzMemberSummary populateMemberSummary(GzBaseUser user, GzMemberSummary parent, List<GzMemberSummary> flatMembers) {
+		private GzMemberSummary populateMemberSummary(GzBaseUser user, GzMemberSummary parent,GzMemberForm memberForm) {
 			GzMemberSummary ms = new GzMemberSummary(user);
 			ms.setParent(parent);
 			
+			memberForm.getMembers().put(ms.getCode(), ms);
 			if (!user.getRole().equals(GzRole.ROLE_ADMIN))
-				flatMembers.add(ms);
+				memberForm.getFlatMembers().add(ms);
 			if (user.getRole().equals(GzRole.ROLE_PLAY))
 				return ms;
 			
 			gzServices.getGzHome().getDownstreamForParent(user);
 			for (GzBaseUser bu : user.getMembers())
-				ms.getMembers().add(populateMemberSummary(bu,ms,flatMembers));
+				ms.getMembers().add(populateMemberSummary(bu,ms,memberForm));
 			return ms;
 		}
 
@@ -243,6 +262,25 @@ public class GzAdmController {
 			return new ModelAndView("admMemberManageAccount","memberForm", memberForm);
 		}
 		
+		@RequestMapping(value="/processAdm", params="changeMemberToChange", method = RequestMethod.POST)
+		public ModelAndView changeMemberToChange(@ModelAttribute("memberForm") GzMemberForm memberForm,ModelMap model)
+		{
+			String memberId = memberForm.getCommand().getMemberToChangeCode();
+			memberForm = createMemberAccountForm(model);
+			if (!memberForm.getChooseMembers().isEmpty())
+			{
+				GzBaseUser bu;
+				try {
+					bu = gzServices.getGzHome().getBaseUserByMemberId(memberId);
+					setUpMember(model,memberForm,bu);
+				} catch (GzPersistenceException e) {
+					e.printStackTrace();
+					memberForm.setErrMsg("Error on Manage Member - contact support");
+				}
+			}
+			return new ModelAndView("admMemberManageAccount","memberForm", memberForm);
+		}
+		
 		private void deactivateSubMembers(GzBaseUser bu) {
 			// DO LATER
 		}
@@ -251,21 +289,31 @@ public class GzAdmController {
 		public ModelAndView searchContact(@ModelAttribute("memberForm") GzMemberForm memberForm,ModelMap model)
 		{
 			memberForm = searchOnType(memberForm,model,"contact");
-			return new ModelAndView("admMemberManageAccount","memberForm", memberForm);
+			return returnSearchModelAndView(memberForm,model);
 		}
 		
 		@RequestMapping(value="/processAdm", params="searchEmail", method = RequestMethod.POST)
 		public ModelAndView searchEmail(@ModelAttribute("memberForm") GzMemberForm memberForm,ModelMap model)
 		{
 			memberForm = searchOnType(memberForm,model,"email");
-			return new ModelAndView("admMemberManageAccount","memberForm", memberForm);
+			return returnSearchModelAndView(memberForm,model);
 		}
 		
 		@RequestMapping(value="/processAdm", params="searchPhone", method = RequestMethod.POST)
 		public ModelAndView searchPhone(@ModelAttribute("memberForm") GzMemberForm memberForm,ModelMap model)
 		{
 			memberForm = searchOnType(memberForm,model,"phone");
-			return new ModelAndView("admMemberManageAccount","memberForm", memberForm);
+			return returnSearchModelAndView(memberForm,model);
+		}
+		
+		private ModelAndView returnSearchModelAndView(GzMemberForm memberForm,ModelMap model)
+		{
+			GzBaseUser currUser = (GzBaseUser) model.get("currUser");
+			GzBaseUser bu = (GzBaseUser) model.get("currTargetUser");
+			if (currUser.getCode().equals(bu.getParentCode()))
+				return new ModelAndView("admMemberManageAccount","memberForm", memberForm);
+			else
+				return new ModelAndView("admMemberDetails","memberForm", memberForm);
 		}
 		
 		private GzMemberForm searchOnType(GzMemberForm memberForm,ModelMap model,String type)
@@ -282,10 +330,15 @@ public class GzAdmController {
 				List<GzBaseUser> bus = gzServices.getGzHome().search(user,command.getSearch(), type);						
 				for (GzBaseUser bu : bus)
 				{
-					mss.add(new GzMemberSummary(bu));
+					GzMemberSummary ms = new GzMemberSummary(bu);
+					mss.add(ms);
+					ms.setParent(memberForm.getMembers().get(ms.getParentCode()));
 				}
 				if (!bus.isEmpty())
+				{
+					model.addAttribute("currTargetUser",bus.get(0));
 					setUpMember(model,memberForm,bus.get(0));
+				}
 			} catch (GzPersistenceException e) {
 				e.printStackTrace();
 				log.error("Search failed");
@@ -297,8 +350,10 @@ public class GzAdmController {
 				memberForm.setChooseMembers(mss);
 			}
 			else
-				memberForm.setErrMsg("No " + type + " like this " + type + " found.");
-			
+			{
+				memberForm.setInCompleteCommand(new GzMemberCommand());
+				memberForm.setErrMsg("No " + type + " like this " + command.getSearch() + " found for downstream.");
+			}
 			return memberForm;
 		}
 		
@@ -468,7 +523,7 @@ public class GzAdmController {
 			{
 				maxBc = superior.getAccount().getBetCommission();
 				maxWc = superior.getAccount().getWinCommission();
-				maxCredit = gzServices.getGzHome().getDownStreamCredit(null,superior);
+				maxCredit = superior.getAccount().getCredit() - gzServices.getGzHome().getDownStreamCredit(null,superior);
 			}
 			try
 			{
@@ -476,18 +531,30 @@ public class GzAdmController {
 				double wc = Double.parseDouble(command.getWinCommission());
 				double credit = Double.parseDouble(command.getCredit());
 				if (bc>superior.getAccount().getBetCommission())
-					errMsg = "Bet Commission cannot exceed : " + df.format(maxBc) + ",";
+					errMsg += "Bet Commission cannot exceed : " + df.format(maxBc) + ",";
 				if (wc>superior.getAccount().getWinCommission())
-					errMsg = "Win Commission cannot exceed : " + df.format(maxWc) + ",";
+					errMsg += "Win Commission cannot exceed : " + df.format(maxWc) + ",";
+				
+				if (errMsg.isEmpty())
+				{
+					double maxDsBc = gzServices.getGzHome().getHigestDownstreamCommission('B',superior.getCode());
+					if (bc>maxDsBc)
+						errMsg += "Bet Commission cannot exceed highest downstream members' : " + df.format(maxDsBc) + " please request downstream resets,";
+					double maxDsWc = gzServices.getGzHome().getHigestDownstreamCommission('W',superior.getCode());
+					if (bc>maxDsWc)
+						errMsg += "Win Commission cannot exceed highest downstream members' : " + df.format(maxDsWc) + " please request downstream resets,";
+				}
+				
 				if (credit > maxCredit)
-					errMsg = "Credit cannot exceed : " + df.format(maxCredit) + "'";
+					errMsg = "Credit cannot exceed : " + df.format(maxCredit) + "',";
+				
 				account.setBetCommission(bc);
 				account.setWinCommission(wc);
 				account.setCredit(credit);
 			}
 			catch (NumberFormatException e)
 			{
-				errMsg = "Invalid format for numeric values,";
+				errMsg = "Invalid format for numeric values";
 			}
 			if (errMsg.length()!=0)
 				return errMsg.substring(0,errMsg.length()-1);

@@ -14,6 +14,7 @@ import org.gz.baseuser.GzBaseUser;
 import org.gz.baseuser.GzRole;
 import org.gz.home.persistence.GzPersistenceException;
 import org.gz.json.GzGameType;
+import org.gz.web.summary.GzSummaryEntry;
 
 public interface GzAccountDao {
 
@@ -41,7 +42,7 @@ public interface GzAccountDao {
 	public GzPayment getPaymentForId(long paymentNum) throws GzPersistenceException;
 	public List<GzInvoice> getInvoicesForInvoice(GzInvoice invoice) throws GzPersistenceException;
 	public List<GzTransaction> getTransactionsForInvoice(GzInvoice invoice) throws GzPersistenceException;
-	public double getHigestDownstreamCommission(char type, String code) throws GzPersistenceException;
+	public double getHigestDownstreamCommission(char type, String code);
 	public Map<UUID, Double> getOutstandingInvoiceAmounts(GzBaseUser user) throws GzPersistenceException;
 	public double getDownStreamAccountBalance(GzBaseUser user, GzBaseUser parent) throws GzPersistenceException;
 	
@@ -50,4 +51,6 @@ public interface GzAccountDao {
 	public List<GzNumberRetainer> getGzDefaultNumberRetainersForUser(GzBaseUser user, int digits);
 	public GzNumberRetainer getGzNumberRetainerForUser(GzBaseUser user, GzGameType gameType, String number);
 	public List<GzNumberRetainer> getGzIndividualNumberRetainersForUser(GzBaseUser user, int digits);
+	
+	public List<GzSummaryEntry> getSummaryEntries(GzBaseUser superior);
 }

@@ -3,6 +3,8 @@ package org.gz.web.adm;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import org.gz.baseuser.GzRole;
 
@@ -15,6 +17,7 @@ public class GzMemberForm implements Serializable {
 	private String errMsg;
 	private String infoMsg;
 	private List<GzRole> roles; 
+	private Map<String,GzMemberSummary> members = new  TreeMap<String,GzMemberSummary>();
 	private List<GzMemberSummary> flatMembers = new ArrayList<GzMemberSummary>();
 	private List<GzMemberSummary> chooseMembers = new ArrayList<GzMemberSummary>();
 	private GzMemberSummary memberSummary;
@@ -103,6 +106,14 @@ public class GzMemberForm implements Serializable {
 
 	public void setChooseMembers(List<GzMemberSummary> chooseMembers) {
 		this.chooseMembers = chooseMembers;
+	}
+
+	public Map<String,GzMemberSummary> getMembers() {
+		return members;
+	}
+
+	public void setMembers(Map<String,GzMemberSummary> members) {
+		this.members = members;
 	}
 
 }

@@ -18,7 +18,7 @@
 
     <h2 style="color:Cyan">Manage Member:</h2>
     <table border="0" cellpadding="3" cellspacing="0" width="1000">
-    <tbody align="left" style="color:purple; background-color:white}">
+    <tbody align="left" style="color:white; background-color:white}">
     <tr>
     <td><font color="#33ff36" size="2">Member Review:</font></td>
     </tr>
@@ -40,7 +40,7 @@
     </tbody>
   </table>
     <table border="0" cellpadding="3" cellspacing="0" width="600">
-    <tbody align="left" style="color:purple; background-color:white}">
+    <tbody align="left" style="color:white; background-color:white}">
     <br>
     <br>
     <tr><td width="50%"><font color="cyan" size="3">Member Details:</font></td></tr>
@@ -61,7 +61,7 @@
     </tr>
     <tr>
       <td width="50%"><font color="#33ff36" size="2">Nick Name</font></td>
-      <td width="50%">${memberForm.inCompleteCommand.profile.nickname}"</td>
+      <td width="50%">${memberForm.inCompleteCommand.profile.nickname}</td>
     </tr>
     <tr>
       <td width="50%"><font color="#33ff36" size="2">Email</font></td>
@@ -76,7 +76,7 @@
     <c:if test="${currUser.role != 'ROLE_ADMIN'}">
     <br>
     <table border="0" cellpadding="3" cellspacing="0" width="600">
-    <tbody align="left" style="color:purple;">
+    <tbody align="left" style="color:white;">
     <tr><td width="50%"><font color="cyan" size="3">Account Details:</font></td></tr>
     <tr>
       <td width="50%"><font color="#33ff36" size="2">Bet Commission (%)</font></td>
@@ -127,7 +127,7 @@
     <br/>
     <br/>
     <table border="0" cellpadding="3" cellspacing="0" width="600">
-    <tbody align="left" style="color:purple;">
+    <tbody align="left" style="color:white;">
     </br>
     <tr>
     <td><input type="submit" name="memberModify" value="Modify" class="button" style="height:23px;"/></td>

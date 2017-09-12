@@ -4,9 +4,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.web.multipart.MultipartFile;
-
 import org.gz.account.GzAccount;
 import org.gz.account.GzInvoice;
 import org.gz.account.GzNumberRetainer;
@@ -21,6 +18,9 @@ import org.gz.baseuser.GzBaseUser;
 import org.gz.baseuser.GzRole;
 import org.gz.home.persistence.GzPersistenceException;
 import org.gz.json.GzGameType;
+import org.gz.web.summary.GzSummaryEntry;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface GzHome 
 {	
@@ -66,7 +66,7 @@ public interface GzHome
 	public GzPayment getPaymentForId(long paymentNum) throws GzPersistenceException;
 	public List<GzInvoice> getInvoicesForInvoice(GzInvoice invoice) throws GzPersistenceException;
 	public List<GzTransaction> getTransactionsForInvoice(GzInvoice invoice) throws GzPersistenceException;
-	public double getHigestDownstreamCommission(char type, String code) throws GzPersistenceException;
+	public double getHigestDownstreamCommission(char type, String code);
 	public String getEmailForId(UUID id) throws GzPersistenceException;
 	public void storeImage(String email, MultipartFile data, String contentType) throws GzPersistenceException;
 	public byte[] getImage(final String email) throws GzPersistenceException;
@@ -90,6 +90,8 @@ public interface GzHome
 	public List<GzNumberRetainer> getGzDefaultNumberRetainersForUser(GzBaseUser user, int digits);
 	public GzNumberRetainer getGzNumberRetainerForUser(GzBaseUser user, GzGameType gameType, String number);
 	public List<GzNumberRetainer> getGzIndividualNumberRetainersForUser(GzBaseUser user, int digits);
+	
+	public List<GzSummaryEntry> getSummaryEntries(GzBaseUser superior);
 	
 	
 }

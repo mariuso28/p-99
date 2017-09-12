@@ -642,11 +642,11 @@ public class GzBaseUserDaoImpl extends GzAccountDaoImpl implements GzBaseUserDao
 
 	private List<GzBaseUser> searchByPhone(GzBaseUser user,String term)
 	{
-		String sql = "select * from baseuser where phone=? and parentcode=?";
+		String sql = "select * from baseuser where phone=? and parentcode like ?";
 		List<GzBaseUser> bus = getJdbcTemplate().query(sql,new PreparedStatementSetter() {
 	        public void setValues(PreparedStatement preparedStatement) throws SQLException {
 	          preparedStatement.setString(1, term.toLowerCase());
-	          preparedStatement.setString(2, user.getCode());
+	          preparedStatement.setString(2, user.getCode() + "%");
 	        }
 	      }, new GzBaseUserRowMapper1(GzBaseUser.class));
 		return bus;
@@ -654,20 +654,19 @@ public class GzBaseUserDaoImpl extends GzAccountDaoImpl implements GzBaseUserDao
 	
 	private List<GzBaseUser> searchByContact(GzBaseUser user,String term)
 	{
-		String sql = "select * from baseuser where lower(contact)=? and parentcode=?";
+		String sql = "select * from baseuser where lower(contact)=? and parentcode like ?";
 			List<GzBaseUser> bus = getJdbcTemplate().query(sql,new PreparedStatementSetter() {
 	        public void setValues(PreparedStatement preparedStatement) throws SQLException {
 	          preparedStatement.setString(1, term.toLowerCase());
-	          preparedStatement.setString(2, user.getCode());
+	          preparedStatement.setString(2, user.getCode() + "%");
 	        }
 	      }, new GzBaseUserRowMapper1(GzBaseUser.class));
 		if (!bus.isEmpty())
 			return bus;
-		sql = "select * from baseuser where lower(contact) like '%"+ term.toLowerCase() + "%' and parentcode=?";
+		sql = "select * from baseuser where lower(contact) like '%"+ term.toLowerCase() + "%' and parentcode like ?";
 		bus = getJdbcTemplate().query(sql,new PreparedStatementSetter() {
 	        public void setValues(PreparedStatement preparedStatement) throws SQLException {
-	          preparedStatement.setString(1, term.toLowerCase());
-	          preparedStatement.setString(2, user.getCode());
+	         preparedStatement.setString(1, user.getCode() + "%");
 	        }
 	        }, new GzBaseUserRowMapper1(GzBaseUser.class));
 	     return bus;
@@ -675,11 +674,11 @@ public class GzBaseUserDaoImpl extends GzAccountDaoImpl implements GzBaseUserDao
 	
 	private List<GzBaseUser> searchByEmail(GzBaseUser user,String term)
 	{
-		String sql = "select * from baseuser where lower(email)=? and parentcode=?";
+		String sql = "select * from baseuser where lower(email)=? and parentcode like ?";
 		List<GzBaseUser> bus = getJdbcTemplate().query(sql,new PreparedStatementSetter() {
 	        public void setValues(PreparedStatement preparedStatement) throws SQLException {
 	          preparedStatement.setString(1, term.toLowerCase());
-	          preparedStatement.setString(2, user.getCode());
+	          preparedStatement.setString(2, user.getCode() + "%");
 	        }
 	      }, new GzBaseUserRowMapper1(GzBaseUser.class));
 		return bus;

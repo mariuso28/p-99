@@ -55,9 +55,6 @@ public class GzAccountMgr {
 	private void createTransactionsForPlayer(GzBaseUser player,double amount,GzAgent agent,String source,GzGameType gameType,Date now,String number) throws GzPersistenceException
 	{
 		GzTransaction transaction = new GzTransaction(player.getMemberId(),agent.getMemberId(),GzTransaction.BET,amount,now,gameType,source,number);
-	//	GzNumberRetainer nr = home.getGzNumberRetainerForUser(player, gameType, number);
-	//	double retain = calcRetain(amount,player.getAccount().getBetCommission(),nr.getRetain());
-	//	double flight = calcFlight(amount,retain);
 		
 		double flight = amount;
 		GzInvoice invoice = storeOrUpdateInvoice(player,agent,flight,0,now,null,gameType);

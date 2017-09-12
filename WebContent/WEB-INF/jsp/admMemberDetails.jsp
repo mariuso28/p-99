@@ -13,61 +13,104 @@
 
 <body>
   <div class="main">
-    <form:form method="post" action="processAdmMember" modelAttribute="admMemberForm">
+    <form:form id="myForm" method="post" action="processAdm" modelAttribute="memberForm">
       <input type="hidden" name="${_csrf.parameterName}"  value="${_csrf.token}" />
-      <div class="headerPic">
-  			<img width="50" height="50"  src='../../img/${currUser.role.shortCode}.png' border='0'>
-  		</div>
-  		<div class="headerWelcome">
-  			<h2 style="color:#aaa; font-weight:700;">
-  				${currUser.role.desc}&nbsp; <font color="${currUser.role.color}">${currUser.contact}</font>
-  			</h2>
-  		</div>
-      <table border="0" cellpadding="3" cellspacing="0" width="100%">
-        <tbody align="left" style="color:purple; background-color:LightYellow">
-          <tr>
-            <td width="30%" style="text-align:right;">WeChat Name:</td>
-            <td width="70%">${currUser.contact}</td>
-          </tr>
-          <tr>
-            <td width="30%" style="text-align:right;">Member Rank:</td>
-            <td width="70%">${currUser.role.shortCode}</td>
-          </tr>
-          <tr>
-            <td width="30%" style="text-align:right;">Password:</td>
-            <td width="70%"><input type="password" style='width:20em' name="password" value=""/></td>
-          </tr>
-          <tr>
-            <td width="30%" style="text-align:right;">Verify Password:</td>
-            <td width="70%"><input type="password" style='width:20em' name="vPassword" value=""/></td>
-          </tr>
-          <tr>
-            <td width="30%" style="text-align:right;">Superior WeChat Name:</td>
-            <c:if test="${currUser.role == 'ROLE_ADMIN'}">
-                <td width="70%">N/A</td>
-            </c:if>
-            <c:if test="${currUser.role != 'ROLE_ADMIN'}">
-                <td width="70%">${currUser.parent.contact}</td>
-            </c:if>
-          </tr>
-          <tr>
-            <td width="30%" style="text-align:right;">Commission %:</td>
-            <td width="70%">${currUser.account.commission}</td>
-          </tr>
-          <tr>
-            <td></td>
-            <td align="right">
-              <input type="submit" name="updatePassword" value="Update Password" class="button" style="height:23px; background-color: #00BB00;"/>
-              <input type="submit" name="memberCancel" value="Cancel" class="button" style="height:23px; background-color: #BB0000;"/>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <br/>
-      <tr><td><font color="red">${admMemberForm.errMsg}</font></td></tr>
-      <tr><td><font color="blue">${admMemberForm.infoMsg}</font></td></tr>
-      <br/>
-    </form:form>
+
+    <h2 style="color:Cyan">Member Account Details:</h2>
+    <table border="0" cellpadding="3" cellspacing="0" width="1000">
+    <tbody align="left" style="color:purple; background-color:white}">
+    <tr>
+    <td><font color="#33ff36" size="2">Member Search:</font></td>
+    </tr>
+     <tr>
+     <td width="40%">
+         <form:select path="command.memberToChangeCode"  style='width:20em'>
+           <c:forEach items="${memberForm.chooseMembers}" var="member" >
+              <option value="${member.memberId}"  ${memberForm.inCompleteCommand.memberToChangeCode eq member.memberId ? 'selected' : ''}>
+                      ${member.memberId} - ${member.contact} - ${member.role} - superior: ${member.parent.memberId}</option>
+           </c:forEach>
+          </form:select>
+     </td>
+     <td width="20%"><input type="text" style='width:20em' name="command.search"
+               value="${memberForm.inCompleteCommand.search}"/></td>
+     <td width="20%"><input type="submit" name="searchContact" value="Search Contact"class="button" style="height:23px; background-color:blue;"/></td>
+     <td width="20%"><input type="submit" name="searchPhone" value="Search Phone"class="button" style="height:23px; background-color:blue;"/></td>
+     <td width="20%"><input type="submit" name="searchEmail" value="Search Email"class="button" style="height:23px; background-color:blue;"/></td>
+    </tr>
+    </tbody>
+  </table>
+    <table border="0" cellpadding="3" cellspacing="0" width="600">
+    <tbody align="left" style="color:yellow; background-color:white}">
+    <br>
+    <br>
+    <tr><td width="50%"><font color="cyan" size="3">Member Details:</font></td></tr>
+    <tr>
+        <td width="50%"><font color="#33ff36" size="2">Member Rank</font></td>
+        <td width="50%">${memberForm.inCompleteCommand.role.desc}</td>
+    </tr>
+    <tr>
+      <td width="50%"><font color="#33ff36" size="2">Contact</font></td>
+      <td width="50%">${memberForm.inCompleteCommand.profile.contact}</td>
+    </tr>
+    <tr>
+      <td width="50%"><font color="#33ff36" size="2">Nick Name</font></td>
+      <td width="50%">${memberForm.inCompleteCommand.profile.nickname}</td>
+    </tr>
+    <tr>
+      <td width="50%"><font color="#33ff36" size="2">Email</font></td>
+      <td width="50%">${memberForm.inCompleteCommand.profile.email}</td>
+    </tr>
+    <tr>
+      <td width="50%"><font color="#33ff36" size="2">Phone</font></td>
+      <td width="50%">${memberForm.inCompleteCommand.profile.phone}</td>
+    </tr>
+    </tbody>
+    </table>
+    <c:if test="${currUser.role != 'ROLE_ADMIN'}">
+    <br>
+    <table border="0" cellpadding="3" cellspacing="0" width="600">
+    <tbody align="left" style="color:yellow;">
+    <tr><td width="50%"><font color="cyan" size="3">Account Details:</font></td></tr>
+    <tr>
+      <td width="50%"><font color="#33ff36" size="2">Bet Commission (%)</font></td>
+      <td width="50%">${memberForm.inCompleteCommand.betCommission}</td>
+    </tr>
+    <tr>
+      <td width="50%"><font color="#33ff36" size="2">Win Commission (%)</font></td>
+      <td width="50%">${memberForm.inCompleteCommand.winCommission}</td>
+    </tr>
+    </tr>
+    <tr>
+      <td width="50%"><font color="#33ff36" size="2">Credit ($)</font></td>
+      <td width="50%">${memberForm.inCompleteCommand.credit}</td>
+    </tr>
+    </c:if>
+    <tr>
+      <td><font color="#33ff36" size="2">Member</td>
+      <c:if test="${memberForm.inCompleteCommand.enabled == true}">
+          <td><font color="Cyan" size="2">Activated</font></td>
+      </c:if>
+      <c:if test="${memberForm.inCompleteCommand.enabled == false}">
+        <td><font color="Red" size="2">Deactivated</font></td>
+      </c:if>
+    </tr>
+    </tbody>
+    </table>
+    <br/>
+      <tr><td><font color="red" size="2">${memberForm.errMsg}</font></td></tr>
+    <br/>
+    <table border="0" cellpadding="3" cellspacing="0" width="600">
+    <tbody align="left" style="color:purple;">
+    </br>
+    <tr>
+    <td><input type="submit" name="memberModifyAccount" value="Modify" class="button" style="height:23px;"/></td>
+    <td><input type="submit" name="memberCancel" value="Cancel" class="button" style="height:23px; background-color:red;"/></td>
+    </tr>
+    <br/>
+    <br/>
+    </tbody>
+    </table>
   </div>
+</form:form>
 </body>
 </html>

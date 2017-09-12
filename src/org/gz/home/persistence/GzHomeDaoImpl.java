@@ -29,6 +29,7 @@ import org.gz.baseuser.GzRole;
 import org.gz.baseuser.persistence.GzBaseUserDao;
 import org.gz.home.GzHome;
 import org.gz.json.GzGameType;
+import org.gz.web.summary.GzSummaryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.multipart.MultipartFile;
@@ -114,7 +115,7 @@ public class GzHomeDaoImpl implements GzHome {
 
 	@Override
 	public double getDownStreamCredit(GzBaseUser user, GzBaseUser parent) {
-		return (parent.getAccount().getCredit() - gzBaseUserDao.getDownStreamCredit(user,parent));
+		return gzBaseUserDao.getDownStreamCredit(user,parent);
 	}
 
 	@Override
@@ -261,7 +262,7 @@ public class GzHomeDaoImpl implements GzHome {
 	}
 
 		@Override
-	public double getHigestDownstreamCommission(char type, String code) throws GzPersistenceException {
+	public double getHigestDownstreamCommission(char type, String code){
 		return gzAccountDao.getHigestDownstreamCommission(type, code);
 	}
 
@@ -390,5 +391,10 @@ public class GzHomeDaoImpl implements GzHome {
 	public List<GzNumberRetainer> getGzIndividualNumberRetainersForUser(GzBaseUser user, int digits)
 	{
 		return gzAccountDao.getGzIndividualNumberRetainersForUser(user, digits);
+	}
+
+	@Override
+	public List<GzSummaryEntry> getSummaryEntries(GzBaseUser superior) {
+		return gzAccountDao.getSummaryEntries(superior);
 	}
 }

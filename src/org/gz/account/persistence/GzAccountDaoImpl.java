@@ -25,6 +25,7 @@ import org.gz.baseuser.GzRole;
 import org.gz.home.persistence.GzPersistenceException;
 import org.gz.home.persistence.GzPersistenceRuntimeException;
 import org.gz.json.GzGameType;
+import org.gz.web.summary.GzSummaryEntry;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
@@ -43,7 +44,7 @@ public class GzAccountDaoImpl extends NamedParameterJdbcDaoSupport implements Gz
 		final Timestamp t1 = new Timestamp(trans.getTimestamp().getTime());
 		try
 		{
-			getJdbcTemplate().update("INSERT INTO transaction (payer,payee,type,amount,invoiceid,timestamp,source) "
+			getJdbcTemplate().update("INSERT INTO transaction (payer,payee,type,amount,invoiceid,timestamp,source,gametype,number) "
 					+ "VALUES( ?, ?, ?, ?, ?, ?, ?)"
 					, new PreparedStatementSetter() {
 						public void setValues(PreparedStatement psStoreTransaction) throws SQLException {
@@ -54,6 +55,8 @@ public class GzAccountDaoImpl extends NamedParameterJdbcDaoSupport implements Gz
 							psStoreTransaction.setLong(5,trans.getInvoiceId());
 							psStoreTransaction.setTimestamp(6,t1);
 							psStoreTransaction.setString(7,trans.getSource());
+							psStoreTransaction.setString(8,trans.getGameType().name());
+							psStoreTransaction.setString(9,trans.getNumber());
 						}
 					});
 		}
@@ -669,7 +672,7 @@ public class GzAccountDaoImpl extends NamedParameterJdbcDaoSupport implements Gz
 	}	
 	
 	@Override
-	public double getHigestDownstreamCommission(char type,String code) throws GzPersistenceException
+	public double getHigestDownstreamCommission(char type,String code)
 	{
 		String field = "betcommission";
 		if (type=='W')
@@ -692,7 +695,7 @@ public class GzAccountDaoImpl extends NamedParameterJdbcDaoSupport implements Gz
 		catch (Exception e)
 		{
 			log.error("Could not execute : " + sql + " - " + e.getMessage());
-			throw new GzPersistenceException(sql + " - " + e.getMessage());
+			throw new GzPersistenceRuntimeException(sql + " - " + e.getMessage());
 		}
 	}
 
@@ -829,7 +832,7 @@ public class GzAccountDaoImpl extends NamedParameterJdbcDaoSupport implements Gz
 	@Override
 	public GzNumberRetainer getGzNumberRetainerForUser(GzBaseUser user,GzGameType gameType,String number)
 	{
-		log.info("getGzDefaultNumberRetainersForUser " + user);
+	//	log.info("getGzDefaultNumberRetainersForUser " + user);
 		try
 		{
 			List<GzNumberRetainer> nr = getJdbcTemplate().query("Select * FROM numberretainer WHERE memberid=? AND defaultnumber=false AND gametype=? AND number=?"
@@ -859,4 +862,24 @@ public class GzAccountDaoImpl extends NamedParameterJdbcDaoSupport implements Gz
 		}
 	}
 	
+	@Override
+	public List<GzSummaryEntry> getSummaryEntries(GzBaseUser superior)
+	{
+		try
+		{
+			List<GzSummaryEntry> ms = getJdbcTemplate().query("select sum(flight) as flight,sum(retain) as retain,payer as memberid,"
+					+ "	gametype from xaction where type='I' and payee=? and status='O' group by payer,gametype order by payer,gametype"
+					, new PreparedStatementSetter() {
+						public void setValues(PreparedStatement ps) throws SQLException {
+							ps.setString(1,superior.getMemberId());
+						}
+					}, BeanPropertyRowMapper.newInstance(GzSummaryEntry.class));
+			
+			return ms;
+		}
+		catch (DataAccessException e)
+		{
+			throw new GzPersistenceRuntimeException(e.getMessage());
+		}
+	}
 }

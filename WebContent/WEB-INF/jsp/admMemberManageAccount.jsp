@@ -12,11 +12,32 @@
 </head>
 
 <body>
+
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.js"></script>
+<script type="text/javascript">
+
+  function changeMemberToChange(digits)
+	{
+		oFormObject = document.forms['myForm'];
+		var field = "command.memberToChangeCode";
+		oformElement = oFormObject.elements[field];
+		oformElement.value = digits;
+
+		var myin = document.createElement('input');
+		myin.type='hidden';
+		myin.name='changeMemberToChange';
+		myin.value='MaHa';
+		oFormObject.appendChild(myin);
+		oFormObject.submit();
+	}
+
+</script>
+
   <div class="main">
     <form:form id="myForm" method="post" action="processAdm" modelAttribute="memberForm">
       <input type="hidden" name="${_csrf.parameterName}"  value="${_csrf.token}" />
 
-    <h2 style="color:Cyan">Manage Member Account:</h2>
+    <h2 style="color:Cyan">Manage Member Account For: ${currUser.memberId} - ${currUser.contact}</h2>
     <table border="0" cellpadding="3" cellspacing="0" width="1000">
     <tbody align="left" style="color:purple; background-color:white}">
     <tr>
@@ -24,7 +45,7 @@
     </tr>
      <tr>
      <td width="40%">
-         <form:select path="command.memberToChangeCode"  style='width:20em'>
+         <form:select path="command.memberToChangeCode"  style='width:20em' onchange="changeMemberToChange(value);">
            <c:forEach items="${memberForm.chooseMembers}" var="member" >
               <option value="${member.memberId}"  ${memberForm.inCompleteCommand.memberToChangeCode eq member.memberId ? 'selected' : ''}>
                       ${member.memberId} - ${member.contact} - ${member.role} - superior: ${member.parent.memberId}</option>

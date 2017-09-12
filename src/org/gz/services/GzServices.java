@@ -11,6 +11,14 @@ import java.util.Random;
 import java.util.concurrent.Semaphore;
 
 import org.apache.log4j.Logger;
+import org.gz.account.GzAccountMgr;
+import org.gz.account.GzInvoice;
+import org.gz.baseuser.GzBaseUser;
+import org.gz.framework.Mail;
+import org.gz.home.GzHome;
+import org.gz.home.persistence.GzPersistenceException;
+import org.gz.util.NumberUtil;
+import org.gz.util.StackDump;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,16 +28,6 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
-
-import org.gz.account.GzAccountMgr;
-import org.gz.account.GzInvoice;
-import org.gz.account.GzPayment;
-import org.gz.baseuser.GzBaseUser;
-import org.gz.framework.Mail;
-import org.gz.home.GzHome;
-import org.gz.home.persistence.GzPersistenceException;
-import org.gz.util.NumberUtil;
-import org.gz.util.StackDump;
 
 
 public class GzServices 

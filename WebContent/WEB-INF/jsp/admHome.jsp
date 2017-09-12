@@ -185,10 +185,8 @@ font: 20px Arial, sans-serif;
     Report
   </button>
   <div style="margin-left:0px" id="Report" class="collapse">
-    <a href="../adm/reportCompany">Company</a><br>
-    <a href="../adm/reportAdmin">Admin</a><br>
+    <a href="../summary/members">Member Summary</a><br>
   </div>
-
 </div>
 <div class="fixed2">
 
